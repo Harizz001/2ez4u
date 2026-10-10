@@ -15,3 +15,4 @@
 
 - Menyempurnakan UI dari M1 (array)
 - Revisi sedikit backend M1 (array) bagian lihat_pesanan, agar melihatnya berdasarkan OID, bukan berdasarkan indeks pada array
+- Revisi lagi, menambahkan fitur di dalam fitur lihat_pesanan, agar bisa mencari pesanan berdasarkan OID dan indeks ke-i
