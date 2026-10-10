@@ -69,6 +69,11 @@ def pilih_fitur(kode_fitur):
     global fitur_aktif
     fitur_aktif = kode_fitur
 
+    lbl_nama.grid_forget()
+    entry_nama.grid_forget()
+    lbl_index.grid_forget()
+    entry_index.grid_forget()
+
     if kode_fitur == "LIHAT":
         lbl_judul_fitur.config(text="Array: lihat pesanan ke-i")
         lbl_sub_fitur.config(text="get: mengambil data pesanan pada indeks tertentu")
@@ -193,80 +198,6 @@ def eksekusi_fitur():
             text_hasil.insert(tk.END, "Gagal menghapus, indeks tidak valid!")
             cetak_log("ARRAY - Hapus gagal, index tidak valid!")
 
-def array_lihat():
-    try:
-        idx = int(entry_index.get())
-    except:
-        idx = 0
-
-    t1 = time.perf_counter()
-    p = data_array.get(idx)
-    t2 = time.perf_counter()
-    ms = (t2 - t1) * 1000
-
-    text_hasil.delete("1.0", tk.END)
-    if p != None:
-        text_hasil.insert(
-            tk.END,
-            "ARRAY Index " + str(idx) + ":\n"
-            + p.oid + " | " + p.pelanggan + " | " + p.menu + " | Rp" + p.harga + " | Status: " + p.status
-        )
-    else:
-        text_hasil.insert(tk.END, "Data tidak ditemukan!")
-
-    cetak_log("ARRAY - Lihat index " + str(idx) + " -> Waktu: " + str(round(ms, 4)) + " ms")
-
-
-def array_tambah_reguler():
-    p = buat_pesanan_baru(3)
-    t1 = time.perf_counter()
-    data_array.append(p)
-    t2 = time.perf_counter()
-    ms = (t2 - t1) * 1000
-
-    cetak_log("ARRAY - Tambah Reguler (" + p.oid + ") di belakang -> Waktu: " + str(round(ms, 4)) + " ms")
-
-
-def array_tambah_prioritas():
-    p = buat_pesanan_baru(2)
-    posisi_tengah = data_array.size // 2
-
-    t1 = time.perf_counter()
-    data_array.insert(posisi_tengah, p)
-    t2 = time.perf_counter()
-    ms = (t2 - t1) * 1000
-
-    cetak_log("ARRAY - Tambah Prioritas (" + p.oid + ") di tengah (" + str(posisi_tengah) + ") -> Waktu: " + str(round(ms, 4)) + " ms")
-
-
-def array_tambah_vip():
-    p = buat_pesanan_baru(1)
-
-    t1 = time.perf_counter()
-    data_array.insert(0, p)
-    t2 = time.perf_counter()
-    ms = (t2 - t1) * 1000
-
-    cetak_log("ARRAY - Tambah VIP (" + p.oid + ") di depan (idx 0) -> Waktu: " + str(round(ms, 4)) + " ms")
-
-
-def array_hapus():
-    try:
-        idx = int(entry_index.get())
-    except:
-        idx = 0
-
-    t1 = time.perf_counter()
-    p = data_array.delete(idx)
-    t2 = time.perf_counter()
-    ms = (t2 - t1) * 1000
-
-    if p != None:
-        cetak_log("ARRAY - Hapus index " + str(idx) + " (" + p.oid + ") -> Waktu: " + str(round(ms, 4)) + " ms")
-    else:
-        cetak_log("ARRAY - Hapus gagal, index tidak valid!")
-
-
 # UI Tkinter
 root = tk.Tk()
 root.title("2EZ4U Food Delivery - Focus Array")
@@ -316,18 +247,10 @@ lbl_index = tk.Label(frame_form, text="Indeks ke-i:")
 entry_index = tk.Entry(frame_form, width=15)
 entry_index.insert(0, "0")
 
-btn_eksekusi = tk.Button(frame_form, text="LIHAT", font=("Arial", 9, "bold"), width=12, command=eksekusi_fitur)
+btn_eksekusi = tk.Button(
+    frame_form, text="LIHAT", font=("Arial", 9, "bold"), width=12, command=eksekusi_fitur
+)
 btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
-
-tk.Label(frame_form, text="Nama Pelanggan:").grid(row=0, column=0, padx=5, pady=5)
-entry_nama = tk.Entry(frame_form)
-entry_nama.insert(0, "Pelanggan Baru")
-entry_nama.grid(row=0, column=1, padx=5, pady=5)
-
-tk.Label(frame_form, text="Indeks Ke-i:").grid(row=0, column=2, padx=5, pady=5)
-entry_index = tk.Entry(frame_form, width=10)
-entry_index.insert(0, "0")
-entry_index.grid(row=0, column=3, padx=5, pady=5)
 
 text_hasil = tk.Text(frame_kanan, height=8)
 text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
