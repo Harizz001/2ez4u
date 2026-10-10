@@ -75,10 +75,9 @@ def pilih_fitur(kode_fitur):
     entry_index.grid_forget()
 
     if kode_fitur == "LIHAT":
-        lbl_judul_fitur.config(text="Array: lihat pesanan ke-i")
-        lbl_sub_fitur.config(text="get: mengambil data pesanan pada indeks tertentu")
-        lbl_nama.grid_remove()
-        entry_nama.grid_remove()
+        lbl_judul_fitur.config(text="Array: lihat pesanan berdasarkan OID")
+        lbl_sub_fitur.config(text="search: pencarian linier berdasarkan ID Pesanan (contoh: O-000005)")
+        lbl_index.config(text="OID Pesanan:")
         lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky="w")
         entry_index.grid(row=0, column=1, padx=5, pady=5, sticky="w")
         btn_eksekusi.config(text="LIHAT", bg="#0056b3", fg="white")
@@ -121,13 +120,10 @@ def pilih_fitur(kode_fitur):
 
 def eksekusi_fitur():
     if fitur_aktif == "LIHAT":
-        try:
-            idx = int(entry_index.get())
-        except:
-            idx = 0
+        target_oid = entry_index.get().strip() # Mengambil input OID dari pengguna
 
         t1 = time.perf_counter()
-        p = data_array.get(idx)
+        p, idx = data_array.cari_by_oid(target_oid) # Memanggil fungsi cari_by_oid
         t2 = time.perf_counter()
         ms = (t2 - t1) * 1000
 
@@ -135,13 +131,18 @@ def eksekusi_fitur():
         if p != None:
             text_hasil.insert(
                 tk.END,
-                "ARRAY Index " + str(idx) + ":\n"
-                + p.oid + " | " + p.pelanggan + " | " + p.menu + " | Rp" + p.harga + " | Status: " + p.status
+                "Ditemukan pada Indeks ke-" + str(idx) + ":\n"
+                + "OID       : " + p.oid + "\n"
+                + "Pelanggan : " + p.pelanggan + "\n"
+                + "Resto     : " + p.resto + "\n"
+                + "Menu      : " + p.menu + "\n"
+                + "Harga     : Rp" + str(p.harga) + "\n"
+                + "Status    : " + p.status
             )
         else:
-            text_hasil.insert(tk.END, "Data tidak ditemukan!")
+            text_hasil.insert(tk.END, "Pesanan dengan OID '" + target_oid + "' tidak ditemukan!")
 
-        cetak_log("ARRAY - Lihat index " + str(idx) + " -> Waktu: " + str(round(ms, 4)) + " ms")
+        cetak_log("ARRAY - Cari OID '" + target_oid + "' -> Waktu: " + str(round(ms, 4)) + " ms")
 
     elif fitur_aktif == "TAMBAH_REGULER":
         p = buat_pesanan_baru(3)

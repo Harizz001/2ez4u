@@ -14,3 +14,4 @@
 ### 11 Oktober
 
 - Menyempurnakan UI dari M1 (array)
+- Revisi sedikit backend M1 (array) bagian lihat_pesanan, agar melihatnya berdasarkan OID, bukan berdasarkan indeks pada array
