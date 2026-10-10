@@ -75,10 +75,8 @@ class Array:
             return hasil
 
     def cari_by_oid(self, target_oid):
-        """Mencari pesanan berdasarkan OID (contoh: 'O-000005') -> O(n)"""
+        """Mencari pesanan berdasarkan OID (contoh: 'O-000005')"""
         for i in range(self.size):
             if self.data[i].oid.upper() == target_oid.upper():
                 return self.data[i], i
         return None, -1
-    
-        return None

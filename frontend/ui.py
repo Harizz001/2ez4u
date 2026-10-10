@@ -74,13 +74,21 @@ def pilih_fitur(kode_fitur):
     lbl_index.grid_forget()
     entry_index.grid_forget()
 
-    if kode_fitur == "LIHAT":
+    if kode_fitur == "LIHAT_INDEKS":
+        lbl_judul_fitur.config(text="Array: lihat pesanan berdasarkan Indeks (i)")
+        lbl_sub_fitur.config(text="get: mengambil data pesanan pada indeks posisi tertentu")
+        lbl_index.config(text="Indeks ke-i:")
+        lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        entry_index.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        btn_eksekusi.config(text="CARI", bg="#0056b3", fg="white")
+
+    elif kode_fitur == "LIHAT_OID":
         lbl_judul_fitur.config(text="Array: lihat pesanan berdasarkan OID")
-        lbl_sub_fitur.config(text="search: pencarian linier berdasarkan ID Pesanan (contoh: O-000005)")
+        lbl_sub_fitur.config(text="cari_by_oid: pencarian linier berdasarkan ID Pesanan (contoh: O-000005)")
         lbl_index.config(text="OID Pesanan:")
         lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky="w")
         entry_index.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        btn_eksekusi.config(text="LIHAT", bg="#0056b3", fg="white")
+        btn_eksekusi.config(text="CARI", bg="#0056b3", fg="white")
 
     elif kode_fitur == "TAMBAH_REGULER":
         lbl_judul_fitur.config(text="Array: pesanan REGULER, masuk paling belakang")
@@ -119,11 +127,39 @@ def pilih_fitur(kode_fitur):
         btn_eksekusi.config(text="HAPUS", bg="#c0392b", fg="white")
 
 def eksekusi_fitur():
-    if fitur_aktif == "LIHAT":
-        target_oid = entry_index.get().strip() # Mengambil input OID dari pengguna
+    if fitur_aktif == "LIHAT_INDEKS":
+        try:
+            idx = int(entry_index.get())
+        except:
+            idx = 0
 
         t1 = time.perf_counter()
-        p, idx = data_array.cari_by_oid(target_oid) # Memanggil fungsi cari_by_oid
+        p = data_array.get(idx)
+        t2 = time.perf_counter()
+        ms = (t2 - t1) * 1000
+
+        text_hasil.delete("1.0", tk.END)
+        if p != None:
+            text_hasil.insert(
+                tk.END,
+                "ARRAY Indeks ke-" + str(idx) + ":\n"
+                + "OID       : " + p.oid + "\n"
+                + "Pelanggan : " + p.pelanggan + "\n"
+                + "Resto     : " + p.resto + "\n"
+                + "Menu      : " + p.menu + "\n"
+                + "Harga     : Rp" + str(p.harga) + "\n"
+                + "Status    : " + p.status
+            )
+        else:
+            text_hasil.insert(tk.END, "Data tidak ditemukan pada indeks " + str(idx) + "!")
+
+        cetak_log("ARRAY - Lihat Indeks " + str(idx) + " -> Waktu: " + str(round(ms, 4)) + " ms")
+
+    elif fitur_aktif == "LIHAT_OID":
+        target_oid = entry_index.get().strip()
+
+        t1 = time.perf_counter()
+        p, idx = data_array.cari_by_oid(target_oid)
         t2 = time.perf_counter()
         ms = (t2 - t1) * 1000
 
@@ -222,7 +258,8 @@ frame_kiri.pack(side=tk.LEFT, fill=tk.Y, padx=5)
 lbl_arr = tk.Label(frame_kiri, text="--- FITUR ARRAY ---", font=("Arial", 10, "bold"))
 lbl_arr.pack(pady=10)
 
-tk.Button(frame_kiri, text="ARRAY - LIHAT PESANAN", width=25, command=lambda: pilih_fitur("LIHAT")).pack(pady=3)
+tk.Button(frame_kiri, text="ARRAY - LIHAT (INDEKS)", width=25, command=lambda: pilih_fitur("LIHAT_INDEKS")).pack(pady=3)
+tk.Button(frame_kiri, text="ARRAY - LIHAT (OID)", width=25, command=lambda: pilih_fitur("LIHAT_OID")).pack(pady=3)
 tk.Button(frame_kiri, text="ARRAY - TAMBAH REGULER", width=25, command=lambda: pilih_fitur("TAMBAH_REGULER")).pack(pady=3)
 tk.Button(frame_kiri, text="ARRAY - TAMBAH PRIORITAS", width=25, command=lambda: pilih_fitur("TAMBAH_PRIORITAS")).pack(pady=3)
 tk.Button(frame_kiri, text="ARRAY - TAMBAH VIP", width=25, command=lambda: pilih_fitur("TAMBAH_VIP")).pack(pady=3)
@@ -262,6 +299,6 @@ frame_log.pack(fill=tk.X, side=tk.BOTTOM)
 text_log = tk.Text(frame_log, height=6, bg="black", fg="lime", font=("Consolas", 9))
 text_log.pack(fill=tk.BOTH, expand=True)
 
-pilih_fitur("LIHAT")  # Set default fitur aktif ke LIHAT
+pilih_fitur("LIHAT_INDEKS")  # Set default fitur aktif ke LIHAT
 
 root.mainloop()
