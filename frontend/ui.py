@@ -252,18 +252,20 @@ label_status.pack(side=tk.LEFT, padx=10)
 frame_utama = tk.Frame(root)
 frame_utama.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-frame_kiri = tk.Frame(frame_utama, width=220, bd=2, relief=tk.GROOVE)
-frame_kiri.pack(side=tk.LEFT, fill=tk.Y, padx=5)
+frame_kiri = tk.Frame(frame_utama, width=250, bd=1, relief=tk.SOLID)
+frame_kiri.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
 
-lbl_arr = tk.Label(frame_kiri, text="--- FITUR ARRAY ---", font=("Arial", 10, "bold"))
-lbl_arr.pack(pady=10)
+# --- KELOMPOK M1: DATA PESANAN ---
+lbl_m1 = tk.Label(frame_kiri, text="M1 - DATA PESANAN", font=("Arial", 8, "bold"), fg="#555555", anchor="w")
+lbl_m1.pack(fill=tk.X, padx=8, pady=(8, 2))
 
-tk.Button(frame_kiri, text="ARRAY - LIHAT (INDEKS)", width=25, command=lambda: pilih_fitur("LIHAT_INDEKS")).pack(pady=3)
-tk.Button(frame_kiri, text="ARRAY - LIHAT (OID)", width=25, command=lambda: pilih_fitur("LIHAT_OID")).pack(pady=3)
-tk.Button(frame_kiri, text="ARRAY - TAMBAH REGULER", width=25, command=lambda: pilih_fitur("TAMBAH_REGULER")).pack(pady=3)
-tk.Button(frame_kiri, text="ARRAY - TAMBAH PRIORITAS", width=25, command=lambda: pilih_fitur("TAMBAH_PRIORITAS")).pack(pady=3)
-tk.Button(frame_kiri, text="ARRAY - TAMBAH VIP", width=25, command=lambda: pilih_fitur("TAMBAH_VIP")).pack(pady=3)
-tk.Button(frame_kiri, text="ARRAY - HAPUS PESANAN", width=25, command=lambda: pilih_fitur("HAPUS")).pack(pady=3)
+# Tombol Fitur Array
+tk.Button(frame_kiri, text="ARRAY - LIHAT (INDEKS)", anchor="w", font=("Arial", 9), bg="#f8f9fa", bd=1, command=lambda: pilih_fitur("LIHAT_INDEKS")).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(frame_kiri, text="ARRAY - LIHAT (OID)", anchor="w", font=("Arial", 9), bg="#f8f9fa", bd=1, command=lambda: pilih_fitur("LIHAT_OID")).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(frame_kiri, text="ARRAY - TAMBAH PESANAN REGULER", anchor="w", font=("Arial", 9), bg="#f8f9fa", bd=1, command=lambda: pilih_fitur("TAMBAH_REGULER")).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(frame_kiri, text="ARRAY - TAMBAH PESANAN PRIORITAS", anchor="w", font=("Arial", 9), bg="#f8f9fa", bd=1, command=lambda: pilih_fitur("TAMBAH_PRIORITAS")).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(frame_kiri, text="ARRAY - TAMBAH PESANAN VIP", anchor="w", font=("Arial", 9), bg="#f8f9fa", bd=1, command=lambda: pilih_fitur("TAMBAH_VIP")).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(frame_kiri, text="ARRAY - HAPUS PESANAN", anchor="w", font=("Arial", 9), bg="#f8f9fa", bd=1, command=lambda: pilih_fitur("HAPUS")).pack(fill=tk.X, padx=8, pady=1)
 
 frame_kanan = tk.Frame(frame_utama)
 frame_kanan.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
