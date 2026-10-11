@@ -20,3 +20,6 @@
 ### 12 Oktober
 
 - Melanjutkan M1 pada linkedlist
+- Mengerjakan UI dari M1 (linkedlist)
+- Fix error dimana linkedlist tidak mau menghapus data yang berada di jauh dari indeks awal
+- Finishing UI M1
