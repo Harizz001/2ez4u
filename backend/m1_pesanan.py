@@ -80,3 +80,95 @@ class Array:
             if self.data[i].oid.upper() == target_oid.upper():
                 return self.data[i], i
         return None, -1
+
+class Node:
+
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
+class LinkList:
+
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.size = 0
+
+    def append(self, v):
+        """Tambah pesanan REGULER di posisi paling belakang -> O(1) via tail pointer"""
+        node_baru = Node(v)
+        if self.head is None:
+            self.head = node_baru
+            self.tail = node_baru
+        else:
+            self.tail.next = node_baru
+            self.tail = node_baru
+        self.size += 1
+
+    def insert(self, i, v):
+        """Tambah VIP (i=0) -> O(1), atau PRIORITAS (i=tengah) -> O(n) traversal"""
+        node_baru = Node(v)
+        if i <= 0:
+            # VIP: Sisip di depan (head)
+            node_baru.next = self.head
+            self.head = node_baru
+            if self.tail is None:
+                self.tail = node_baru
+            self.size += 1
+        elif i >= self.size:
+            # REGULER: Sisip di belakang
+            self.append(v)
+        else:
+            # PRIORITAS: Menelusuri node dari head sampai posisi i-1
+            curr = self.head
+            for k in range(i - 1):
+                curr = curr.next
+            node_baru.next = curr.next
+            curr.next = node_baru
+            self.size += 1
+
+    def get(self, i):
+        """Lihat pesanan ke-i -> O(n) Traversal"""
+        if i < 0 or i >= self.size:
+            return None
+        curr = self.head
+        for k in range(i):
+            curr = curr.next
+        return curr.val
+
+    def delete(self, i):
+        """Hapus pesanan ke-i -> O(n) Traversal"""
+        if i < 0 or i >= self.size:
+            return None
+
+        if i == 0:
+            hasil = self.head.val
+            self.head = self.head.next
+            self.size -= 1
+            if self.size == 0:
+                self.tail = None
+            return hasil
+
+        curr = self.head
+        for k in range(i - 1):
+            curr = curr.next
+
+        hasil = curr.next.val
+        curr.next = curr.next.next
+
+        if curr.next is None:
+            self.tail = curr
+
+        self.size -= 1
+        return hasil
+
+    def cari_by_oid(self, target_oid):
+        """Cari pesanan berdasarkan OID -> O(n) Traversal"""
+        curr = self.head
+        idx = 0
+        while curr is not None:
+            if curr.val.oid.upper() == target_oid.upper():
+                return curr.val, idx
+            curr = curr.next
+            idx += 1
+        return None, -1
