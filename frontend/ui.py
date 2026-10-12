@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import tkinter as tk
+from tkinter import ttk
 
 # Import Backend M1 & M2
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -477,26 +478,52 @@ def eksekusi_fitur():
         t2 = time.perf_counter()
         ms = (t2 - t1) * 1000
 
-        text_hasil.delete("1.0", tk.END)
-        text_hasil.insert(
-            tk.END,
-            f"Struk: {expr}\nPostfix: {' '.join(postfix_tokens)}\nTOTAL: Rp {total:,}\n\n"
+        # 1. Tampilkan Ringkasan Teks Atas
+        text_ringkasan = (
+            f"Struk : {expr}\n"
+            f"Postfix: {' '.join(postfix_tokens)}\n"
+            f"TOTAL : Rp {total:,}"
         )
-        text_hasil.insert(
-            tk.END,
-            f"{'Langkah':<8} | {'Token':<6} | {'Tindakan':<30} | {'Stack':<15} | Output\n"
-        )
-        text_hasil.insert(tk.END, "-" * 80 + "\n")
+        lbl_ringkasan.config(text=text_ringkasan)
 
+        # 2. Sembunyikan Text biasa & Tampilkan Tabel Treeview
+        text_hasil.pack_forget()
+        frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
+
+        # 3. Konfigurasi Kolom Tabel
+        kolom = ("langkah", "token", "tindakan", "stack", "output")
+        tree_hasil["columns"] = kolom
+
+        tree_hasil.heading("langkah", text="langkah", anchor="w")
+        tree_hasil.heading("token", text="token", anchor="w")
+        tree_hasil.heading("tindakan", text="tindakan", anchor="w")
+        tree_hasil.heading("stack", text="stack", anchor="w")
+        tree_hasil.heading("output", text="output", anchor="w")
+
+        tree_hasil.column("langkah", width=70, minwidth=60)
+        tree_hasil.column("token", width=60, minwidth=50)
+        tree_hasil.column("tindakan", width=280, minwidth=200)
+        tree_hasil.column("stack", width=120, minwidth=100)
+        tree_hasil.column("output", width=200, minwidth=150)
+
+        # 4. Bersihkan data tabel lama
+        for item in tree_hasil.get_children():
+            tree_hasil.delete(item)
+
+        # 5. Isi Tahap 1: Konversi Infix ke Postfix (1.1, 1.2, dst)
         idx = 1
         for tkn, tin, stk, out in log_1:
-            text_hasil.insert(
-                tk.END, f"1.{idx:<6} | {tkn:<6} | {tin:<30} | {stk:<15} | {out}\n"
-            )
+            lbl_step = f"1.{idx}" if idx != len(log_1) else "1.akhir"
+            tree_hasil.insert("", tk.END, values=(lbl_step, tkn, tin, stk, out))
             idx += 1
 
-        cetak_log(f"M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms")
+        # 6. Isi Tahap 2: Evaluasi Postfix (2.1, 2.2, dst)
+        idx_eval = 1
+        for tkn, tin, stk in log_2:
+            tree_hasil.insert("", tk.END, values=(f"2.{idx_eval}", tkn, tin, stk, stk))
+            idx_eval += 1
 
+        cetak_log(f"M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms")
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
 root.title('2EZ4U Food Delivery')
@@ -698,8 +725,50 @@ btn_eksekusi = tk.Button(
 )
 btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
 
-text_hasil = tk.Text(frame_kanan, height=10)
-text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
+# --- FRAME KANAN (HASIL & TABEL) ---
+frame_kanan = tk.Frame(frame_utama)
+frame_kanan.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+lbl_judul_fitur = tk.Label(frame_kanan, text="Stack: hitung struk lewat postfix", font=("Arial", 11, "bold"), anchor="w")
+lbl_judul_fitur.pack(fill=tk.X, pady=(5, 0))
+
+lbl_sub_fitur = tk.Label(frame_kanan, text="Struk ditulis infix, lalu dihitung dua tahap dengan stack", font=("Arial", 9, "italic"), fg="gray", anchor="w")
+lbl_sub_fitur.pack(fill=tk.X, pady=(0, 5))
+
+# Form Input
+frame_form = tk.Frame(frame_kanan, bd=1, relief=tk.SOLID)
+frame_form.pack(fill=tk.X, pady=5)
+
+lbl_nama = tk.Label(frame_form, text="Struk belanja (infix):")
+entry_nama = tk.Entry(frame_form, width=35)
+entry_nama.insert(0, "( 3 * 12000 ) + ( 2 * 8500 ) - 5000")
+
+lbl_index = tk.Label(frame_form, text="Indeks ke-i:")
+entry_index = tk.Entry(frame_form, width=15)
+entry_index.insert(0, "0")
+
+btn_eksekusi = tk.Button(frame_form, text="HITUNG", font=("Arial", 9, "bold"), width=12, command=lambda: eksekusi_fitur())
+btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
+
+# --- AREA RINGKASAN TEKS ---
+lbl_ringkasan = tk.Label(frame_kanan, text="", font=("Arial", 10), justify="left", anchor="w")
+lbl_ringkasan.pack(fill=tk.X, pady=5)
+
+# --- AREA TABEL BERKOLOM (TREEVIEW) ---
+frame_tabel = tk.Frame(frame_kanan)
+frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
+
+tree_hasil = ttk.Treeview(frame_tabel, show="headings")
+scroll_y = ttk.Scrollbar(frame_tabel, orient="vertical", command=tree_hasil.yview)
+scroll_x = ttk.Scrollbar(frame_tabel, orient="horizontal", command=tree_hasil.xview)
+tree_hasil.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+
+scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
+tree_hasil.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Widget Text Alternatif (Tetap disimpan bila butuh output teks biasa)
+text_hasil = tk.Text(frame_kanan, height=8)
 
 frame_log = tk.LabelFrame(frame_kanan, text='COMMAND LOG & WAKTU')
 frame_log.pack(fill=tk.X, side=tk.BOTTOM)

@@ -25,3 +25,4 @@
 - Fix error dimana linkedlist tidak mau menghapus data yang berada di jauh dari indeks awal
 - Finishing UI M1
 - Mulai mengerjakan M2 (Postfix)
+- Revisi UI dari M2 (Postfix) agar bisa import kolom
