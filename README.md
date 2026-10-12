@@ -24,4 +24,4 @@
 - Fix error dimana beberapa tombol tidak merespon
 - Fix error dimana linkedlist tidak mau menghapus data yang berada di jauh dari indeks awal
 - Finishing UI M1
-- Mulai mengerjakan M2 (queue)
+- Mulai mengerjakan M2 (Postfix)
