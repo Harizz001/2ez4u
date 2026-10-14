@@ -36,3 +36,4 @@
 - Finishing UI dari M2
 - Mengerjakan insertion search (M3)
 - Menambahkan fitur scroll di frame kiri
+- Fix error dimana button eksekusi di bagian insertion search saling timpa menimpa

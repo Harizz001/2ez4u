@@ -164,6 +164,9 @@ def pilih_fitur(kode_fitur):
   lbl_index.grid_forget()
   entry_index.grid_forget()
 
+  # Reset posisi tombol ke kolom 2 (default untuk fitur lainnya)
+  btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
+
   # Reset Tampilan Output ke mode Teks biasa
   lbl_ringkasan.config(text='')
   lbl_ringkasan.pack_forget()
@@ -371,22 +374,27 @@ def pilih_fitur(kode_fitur):
     entry_index.insert(0, '1')
     btn_eksekusi.config(text='DEQUEUE', bg='#0056b3', fg='white')
 
+  # --- M3 FITUR ---
   elif kode_fitur == 'SORT_INSERTION':
         lbl_judul_fitur.config(text="Sort: insertion sort, O(n²)")
         lbl_sub_fitur.config(text="Setiap elemen digeser mundur sampai menemukan tempatnya. Sederhana, tetapi kerjanya tumbuh kuadratik.")
         
+        # Input 1: Jumlah Baris (Kolom 0 & 1)
         lbl_index.config(text="Jumlah baris diurutkan:")
         lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky="w")
         entry_index.grid(row=0, column=1, padx=5, pady=5, sticky="w")
         entry_index.delete(0, tk.END)
-        entry_index.insert(0, "10") # Default 10 baris
+        entry_index.insert(0, "10")
         
+        # Input 2: Kunci Urut (Kolom 2 & 3)
         lbl_nama.config(text="Diurutkan menurut:")
         lbl_nama.grid(row=0, column=2, padx=5, pady=5, sticky="w")
         entry_nama.grid(row=0, column=3, padx=5, pady=5, sticky="w")
         entry_nama.delete(0, tk.END)
-        entry_nama.insert(0, "harga") # Pilihan: harga, oid, atau selesai
+        entry_nama.insert(0, "harga")
         
+        # Pindahkan Tombol URUTKAN ke Kolom 4 agar tidak menimpa kolom 2
+        btn_eksekusi.grid(row=0, column=4, padx=15, pady=5)
         btn_eksekusi.config(text="URUTKAN", bg="#0056b3", fg="white")
 
 def eksekusi_fitur():
