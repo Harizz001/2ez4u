@@ -29,4 +29,5 @@
 
 ### 14 Oktober
 
-- Fix error dimana kolom template input nama pelanggan di M1 dan input rumus M2 muncul sama
+- Fix error dimana UI kolom template input nama pelanggan di M1 dan input rumus M2 muncul sama
+- Mengerjakan Undo dan Redo (M2)

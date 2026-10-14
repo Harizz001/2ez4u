@@ -5,14 +5,18 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-# Import Backend M1 & M2 (Khusus Langkah 1: Stack & Postfix)
+# Import Backend M1 & M2 (Khusus Stack: Postfix, Undo, Redo)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.m1_pesanan import Array, LinkList, Pesanan
-from backend.m2_antrean import hitung_postfix, ke_postfix
+from backend.m2_antrean import Stack, hitung_postfix, ke_postfix
 
 # Global Variable M1
 data_array = Array()
 data_ll = LinkList()
+
+# Global Variable M2 (Stack Undo & Redo)
+undo_stack = Stack()
+redo_stack = Stack()
 
 id_baru = 200001
 fitur_aktif = 'ARR_LIHAT_INDEKS'
@@ -24,9 +28,11 @@ def cetak_log(pesan):
 
 
 def tombol_load_csv():
-  global data_array, data_ll
+  global data_array, data_ll, undo_stack, redo_stack
   data_array = Array()
   data_ll = LinkList()
+  undo_stack.clear()
+  redo_stack.clear()
 
   path_file = 'data/pesanan.csv'
   if not os.path.exists(path_file):
@@ -70,7 +76,9 @@ def buat_pesanan_baru(prioritas):
   global id_baru
   oid = 'O-' + str(id_baru)
   id_baru += 1
-  nama = entry_nama.get() if entry_nama.get() != '' else 'Pelanggan Baru'
+  nama = entry_nama.get().strip()
+  if not nama:
+    nama = 'Pelanggan Baru'
   return Pesanan(
       oid,
       nama,
@@ -84,6 +92,13 @@ def buat_pesanan_baru(prioritas):
   )
 
 
+def reset_input_form():
+  entry_nama.delete(0, tk.END)
+  entry_nama.insert(0, 'Pelanggan Baru')
+  entry_index.delete(0, tk.END)
+  entry_index.insert(0, '0')
+
+
 def pilih_fitur(kode_fitur):
   global fitur_aktif
   fitur_aktif = kode_fitur
@@ -94,16 +109,11 @@ def pilih_fitur(kode_fitur):
   lbl_index.grid_forget()
   entry_index.grid_forget()
 
-  # Reset Tampilan Output ke mode Teks biasa (default M1)
+  # Reset Tampilan Output ke mode Teks biasa (default)
   lbl_ringkasan.config(text='')
   lbl_ringkasan.pack_forget()
   frame_tabel.pack_forget()
   text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
-
-  # Helper untuk reset input nama pelanggan
-  def reset_nama_pelanggan():
-    entry_nama.delete(0, tk.END)
-    entry_nama.insert(0, 'Pelanggan Baru')
 
   # --- M1 FITUR ---
   if kode_fitur == 'ARR_LIHAT_INDEKS':
@@ -132,7 +142,7 @@ def pilih_fitur(kode_fitur):
     lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
+    reset_input_form()
     btn_eksekusi.config(text='TAMBAH', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'ARR_TAMBAH_PRIORITAS':
@@ -143,7 +153,7 @@ def pilih_fitur(kode_fitur):
     lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
+    reset_input_form()
     btn_eksekusi.config(text='TAMBAH', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'ARR_TAMBAH_VIP':
@@ -154,7 +164,7 @@ def pilih_fitur(kode_fitur):
     lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
+    reset_input_form()
     btn_eksekusi.config(text='TAMBAH', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'ARR_HAPUS':
@@ -197,7 +207,7 @@ def pilih_fitur(kode_fitur):
     lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
+    reset_input_form()
     btn_eksekusi.config(text='TAMBAH', bg='#27ae60', fg='white')
 
   elif kode_fitur == 'LL_TAMBAH_PRIORITAS':
@@ -210,7 +220,7 @@ def pilih_fitur(kode_fitur):
     lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
+    reset_input_form()
     btn_eksekusi.config(text='TAMBAH', bg='#27ae60', fg='white')
 
   elif kode_fitur == 'LL_TAMBAH_VIP':
@@ -221,7 +231,7 @@ def pilih_fitur(kode_fitur):
     lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
-    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
+    reset_input_form()
     btn_eksekusi.config(text='TAMBAH', bg='#27ae60', fg='white')
 
   elif kode_fitur == 'LL_HAPUS':
@@ -234,13 +244,13 @@ def pilih_fitur(kode_fitur):
     entry_index.grid(row=0, column=1, padx=5, pady=5, sticky='w')
     btn_eksekusi.config(text='HAPUS', bg='#c0392b', fg='white')
 
-  # --- M2 FITUR: LANGKAH 1 ---
+  # --- M2 FITUR (STACK) ---
   elif kode_fitur == 'M2_POSTFIX':
     lbl_judul_fitur.config(text='Stack: hitung struk lewat postfix')
     lbl_sub_fitur.config(
         text=(
             'Struk ditulis infix, lalu dihitung dua tahap dengan stack: tahap'
-            ' 1 infix menjadi postfix, tahap 2 postfix dievaluasi.'
+            ' 1 infix ke postfix, tahap 2 evaluasi.'
         )
     )
     lbl_nama.config(text='Struk belanja (infix):')
@@ -250,7 +260,24 @@ def pilih_fitur(kode_fitur):
     entry_nama.insert(0, '( 3 * 12000 ) + ( 2 * 8500 ) - 5000')
     btn_eksekusi.config(text='HITUNG', bg='#0056b3', fg='white')
 
+  elif kode_fitur == 'M2_UNDO':
+    lbl_judul_fitur.config(text='Stack: batalkan aksi perubahan terakhir')
+    lbl_sub_fitur.config(
+        text='Mengambil catatan teratas tumpukan undo, lalu membatalkannya.'
+    )
+    btn_eksekusi.config(text='UNDO', bg='#e67e22', fg='white')
+
+  elif kode_fitur == 'M2_REDO':
+    lbl_judul_fitur.config(text='Stack: kerjakan lagi aksi yang dibatalkan')
+    lbl_sub_fitur.config(
+        text='Mengambil catatan teratas tumpukan redo, lalu mengerjakan ulang.'
+    )
+    btn_eksekusi.config(text='REDO', bg='#2980b9', fg='white')
+
+
 def eksekusi_fitur():
+  global undo_stack, redo_stack
+
   # --- EKSEKUSI M1 ---
   if fitur_aktif == 'ARR_LIHAT_INDEKS':
     try:
@@ -299,6 +326,8 @@ def eksekusi_fitur():
     p = buat_pesanan_baru(3)
     t1 = time.perf_counter()
     data_array.append(p)
+    undo_stack.push(('ARR_TAMBAH', p, data_array.size - 1))
+    redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -317,6 +346,8 @@ def eksekusi_fitur():
     pos = data_array.size // 2
     t1 = time.perf_counter()
     data_array.insert(pos, p)
+    undo_stack.push(('ARR_TAMBAH', p, pos))
+    redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -334,6 +365,8 @@ def eksekusi_fitur():
     p = buat_pesanan_baru(1)
     t1 = time.perf_counter()
     data_array.insert(0, p)
+    undo_stack.push(('ARR_TAMBAH', p, 0))
+    redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -353,6 +386,9 @@ def eksekusi_fitur():
       idx = 0
     t1 = time.perf_counter()
     p = data_array.delete(idx)
+    if p != None:
+      undo_stack.push(('ARR_HAPUS', p, idx))
+      redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -414,6 +450,8 @@ def eksekusi_fitur():
     p = buat_pesanan_baru(3)
     t1 = time.perf_counter()
     data_ll.append(p)
+    undo_stack.push(('LL_TAMBAH', p, data_ll.size - 1))
+    redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -432,6 +470,8 @@ def eksekusi_fitur():
     pos = data_ll.size // 2
     t1 = time.perf_counter()
     data_ll.insert(pos, p)
+    undo_stack.push(('LL_TAMBAH', p, pos))
+    redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -449,6 +489,8 @@ def eksekusi_fitur():
     p = buat_pesanan_baru(1)
     t1 = time.perf_counter()
     data_ll.insert(0, p)
+    undo_stack.push(('LL_TAMBAH', p, 0))
+    redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -468,6 +510,9 @@ def eksekusi_fitur():
       idx = 0
     t1 = time.perf_counter()
     p = data_ll.delete(idx)
+    if p != None:
+      undo_stack.push(('LL_HAPUS', p, idx))
+      redo_stack.clear()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -482,7 +527,7 @@ def eksekusi_fitur():
     else:
       text_hasil.insert(tk.END, 'Gagal menghapus, indeks tidak valid!')
 
-  # --- EKSEKUSI M2: STACK POSTFIX ---
+  # --- M2: STACK POSTFIX ---
   elif fitur_aktif == 'M2_POSTFIX':
     expr = entry_nama.get().strip()
     t1 = time.perf_counter()
@@ -491,7 +536,6 @@ def eksekusi_fitur():
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
 
-    # Switch Tampilan Ke Ringkasan & Tabel Treeview Berkolom
     text_hasil.pack_forget()
     lbl_ringkasan.pack(fill=tk.X, pady=5)
     frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
@@ -504,12 +548,8 @@ def eksekusi_fitur():
 
     kolom = ('langkah', 'token', 'tindakan', 'stack', 'output')
     tree_hasil['columns'] = kolom
-
-    tree_hasil.heading('langkah', text='langkah', anchor='w')
-    tree_hasil.heading('token', text='token', anchor='w')
-    tree_hasil.heading('tindakan', text='tindakan', anchor='w')
-    tree_hasil.heading('stack', text='stack', anchor='w')
-    tree_hasil.heading('output', text='output', anchor='w')
+    for c in kolom:
+      tree_hasil.heading(c, text=c, anchor='w')
 
     tree_hasil.column('langkah', width=70, minwidth=60)
     tree_hasil.column('token', width=60, minwidth=50)
@@ -520,14 +560,12 @@ def eksekusi_fitur():
     for item in tree_hasil.get_children():
       tree_hasil.delete(item)
 
-    # Fill Tahap 1: Infix to Postfix
     idx = 1
     for tkn, tin, stk, out in log_1:
       lbl_step = f'1.{idx}' if idx != len(log_1) else '1.akhir'
       tree_hasil.insert('', tk.END, values=(lbl_step, tkn, tin, stk, out))
       idx += 1
 
-    # Fill Tahap 2: Evaluasi Postfix
     idx_eval = 1
     for tkn, tin, stk in log_2:
       tree_hasil.insert(
@@ -536,6 +574,105 @@ def eksekusi_fitur():
       idx_eval += 1
 
     cetak_log(f'M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms')
+
+  # --- M2: STACK UNDO ---
+  elif fitur_aktif == 'M2_UNDO':
+    if undo_stack.is_empty():
+      text_hasil.delete('1.0', tk.END)
+      text_hasil.insert(
+          tk.END, 'Tumpukan UNDO kosong, tidak ada aksi untuk dibatalkan!'
+      )
+      return
+
+    t1 = time.perf_counter()
+    aksi = undo_stack.pop()
+    jenis, pesanan, pos = aksi[0], aksi[1], aksi[2]
+
+    if jenis == 'ARR_TAMBAH':
+      data_array.delete(pos)
+      redo_stack.push(('ARR_TAMBAH', pesanan, pos))
+      pesan = f'Membatalkan penambahan Array: {pesanan.oid} ({pesanan.pelanggan})'
+    elif jenis == 'ARR_HAPUS':
+      data_array.insert(pos, pesanan)
+      redo_stack.push(('ARR_HAPUS', pesanan, pos))
+      pesan = f'Membatalkan penghapusan Array: {pesanan.oid} ({pesanan.pelanggan})'
+    elif jenis == 'LL_TAMBAH':
+      data_ll.delete(pos)
+      redo_stack.push(('LL_TAMBAH', pesanan, pos))
+      pesan = (
+          f'Membatalkan penambahan LinkedList: {pesanan.oid} ({pesanan.pelanggan})'
+      )
+    elif jenis == 'LL_HAPUS':
+      data_ll.insert(pos, pesanan)
+      redo_stack.push(('LL_HAPUS', pesanan, pos))
+      pesan = (
+          f'Membatalkan penghapusan LinkedList: {pesanan.oid}'
+          f' ({pesanan.pelanggan})'
+      )
+
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
+
+    text_hasil.delete('1.0', tk.END)
+    text_hasil.insert(
+        tk.END,
+        f'{pesan}\nTumpukan undo tersisa {undo_stack.size()} catatan, redo'
+        f' {redo_stack.size()} catatan.',
+    )
+    cetak_log(f'M2 - Stack Undo -> Waktu: {round(ms, 4)} ms')
+
+  # --- M2: STACK REDO ---
+  elif fitur_aktif == 'M2_REDO':
+    if redo_stack.is_empty():
+      text_hasil.delete('1.0', tk.END)
+      text_hasil.insert(
+          tk.END,
+          'Tumpukan REDO kosong, tidak ada aksi untuk dikerjakan ulang!',
+      )
+      return
+
+    t1 = time.perf_counter()
+    aksi = redo_stack.pop()
+    jenis, pesanan, pos = aksi[0], aksi[1], aksi[2]
+
+    if jenis == 'ARR_TAMBAH':
+      data_array.insert(pos, pesanan)
+      undo_stack.push(('ARR_TAMBAH', pesanan, pos))
+      pesan = (
+          f'Mengerjakan ulang penambahan Array: {pesanan.oid} ({pesanan.pelanggan})'
+      )
+    elif jenis == 'ARR_HAPUS':
+      data_array.delete(pos)
+      undo_stack.push(('ARR_HAPUS', pesanan, pos))
+      pesan = (
+          f'Mengerjakan ulang penghapusan Array: {pesanan.oid}'
+          f' ({pesanan.pelanggan})'
+      )
+    elif jenis == 'LL_TAMBAH':
+      data_ll.insert(pos, pesanan)
+      undo_stack.push(('LL_TAMBAH', pesanan, pos))
+      pesan = (
+          'Mengerjakan ulang penambahan LinkedList:'
+          f' {pesanan.oid} ({pesanan.pelanggan})'
+      )
+    elif jenis == 'LL_HAPUS':
+      data_ll.delete(pos)
+      undo_stack.push(('LL_HAPUS', pesanan, pos))
+      pesan = (
+          'Mengerjakan ulang penghapusan LinkedList:'
+          f' {pesanan.oid} ({pesanan.pelanggan})'
+      )
+
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
+
+    text_hasil.delete('1.0', tk.END)
+    text_hasil.insert(
+        tk.END,
+        f'{pesan}\nTumpukan undo {undo_stack.size()} catatan, redo tersisa'
+        f' {redo_stack.size()} catatan.',
+    )
+    cetak_log(f'M2 - Stack Redo -> Waktu: {round(ms, 4)} ms')
 
 
 # --- UI SETUP TKINTER ---
@@ -685,7 +822,7 @@ tk.Button(
     command=lambda: pilih_fitur('LL_HAPUS'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# KELOMPOK M2 (Hanya Stack Postfix untuk Langkah 1)
+# KELOMPOK M2 (STACK Saja)
 lbl_m2 = tk.Label(
     frame_kiri,
     text='M2 - STACK DAN QUEUE',
@@ -704,9 +841,27 @@ tk.Button(
     bd=1,
     command=lambda: pilih_fitur('M2_POSTFIX'),
 ).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(
+    frame_kiri,
+    text='STACK - UNDO',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('M2_UNDO'),
+).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(
+    frame_kiri,
+    text='STACK - REDO',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('M2_REDO'),
+).pack(fill=tk.X, padx=8, pady=1)
 
 
-# --- FRAME KANAN (DEKLARASI TUNGGAL) ---
+# --- FRAME KANAN ---
 frame_kanan = tk.Frame(frame_utama)
 frame_kanan.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
@@ -748,12 +903,12 @@ btn_eksekusi = tk.Button(
 )
 btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
 
-# Area Ringkasan Teks (khusus Postfix)
+# Area Ringkasan Teks
 lbl_ringkasan = tk.Label(
     frame_kanan, text='', font=('Arial', 10), justify='left', anchor='w'
 )
 
-# Area Tabel Treeview Berkolom (khusus Postfix)
+# Area Tabel Treeview (khusus Postfix)
 frame_tabel = tk.Frame(frame_kanan)
 tree_hasil = ttk.Treeview(frame_tabel, show='headings')
 scroll_y = ttk.Scrollbar(
@@ -768,7 +923,7 @@ scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
 scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
 tree_hasil.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# Area Text Biasa (untuk fitur M1)
+# Area Text Biasa
 text_hasil = tk.Text(frame_kanan, height=8)
 text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
 
