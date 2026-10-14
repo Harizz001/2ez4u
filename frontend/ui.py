@@ -118,7 +118,7 @@ def reset_input_form():
   entry_nama.delete(0, tk.END)
   entry_nama.insert(0, 'Pelanggan Baru')
   entry_index.delete(0, tk.END)
-  entry_index.insert(0, '0')
+  entry_index.insert(0, '1')
 
 
 def tampilkan_tabel_pesanan(daftar_pesanan):
@@ -160,7 +160,7 @@ def pilih_fitur(kode_fitur):
   lbl_index.grid_forget()
   entry_index.grid_forget()
 
-  # Reset Tampilan Output ke mode Teks biasa (default)
+  # Reset Tampilan Output ke mode Teks biasa
   lbl_ringkasan.config(text='')
   lbl_ringkasan.pack_forget()
   frame_tabel.pack_forget()
@@ -335,6 +335,37 @@ def pilih_fitur(kode_fitur):
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
     reset_input_form()
     btn_eksekusi.config(text='ENQUEUE', bg='#0056b3', fg='white')
+
+  elif kode_fitur == 'M2_DEQUEUE_NAIF':
+    lbl_judul_fitur.config(
+        text='Queue naif: ambil dari depan dengan menggeser isi'
+    )
+    lbl_sub_fitur.config(
+        text='Mengambil indeks 0 lalu menggeser seluruh sisa 1 petak ke kiri.'
+    )
+    lbl_index.config(text='Berapa kali dequeue:')
+    lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    entry_index.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    entry_index.delete(0, tk.END)
+    entry_index.insert(0, '1')
+    btn_eksekusi.config(text='DEQUEUE', bg='#0056b3', fg='white')
+
+  elif kode_fitur == 'M2_DEQUEUE_CIRCULAR':
+    lbl_judul_fitur.config(
+        text='Queue circular: ambil dari depan dengan memajukan penunjuk'
+    )
+    lbl_sub_fitur.config(
+        text=(
+            'Hanya penunjuk front yang maju. Isi larik tidak digeser sama'
+            ' sekali.'
+        )
+    )
+    lbl_index.config(text='Berapa kali dequeue:')
+    lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    entry_index.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    entry_index.delete(0, tk.END)
+    entry_index.insert(0, '1')
+    btn_eksekusi.config(text='DEQUEUE', bg='#0056b3', fg='white')
 
 
 def eksekusi_fitur():
@@ -658,6 +689,72 @@ def eksekusi_fitur():
     tampilkan_tabel_pesanan([p])
     cetak_log(f'M2 - Queue Enqueue ({p.oid}) -> Waktu: {round(ms, 4)} ms')
 
+  # --- M2: QUEUE DEQUEUE NAIF ---
+  elif fitur_aktif == 'M2_DEQUEUE_NAIF':
+    try:
+      k = int(entry_index.get())
+    except:
+      k = 1
+    t1 = time.perf_counter()
+    dilayani_naif, geseran = q_naif.dequeue_n(k)
+    dilayani_circ, _ = q_circ.dequeue_n(k)
+
+    if dilayani_naif:
+      undo_stack.push(('QUEUE_DEQUEUE', dilayani_naif, None))
+      redo_stack = Stack()
+
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
+
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    rata_geser = (
+        round(geseran / len(dilayani_naif), 2) if dilayani_naif else 0
+    )
+    text_ringkasan = (
+        f'{len(dilayani_naif)} pesanan keluar dari depan antrean naif.\nTotal'
+        f' {geseran:,} elemen digeser, rata-rata {rata_geser:,} geseran per'
+        f' dequeue.\nSisa antrean naif {q_naif.size():,}.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
+
+    tampilkan_tabel_pesanan(dilayani_naif)
+    cetak_log(
+        f'M2 - Queue Dequeue Naif ({len(dilayani_naif)} data) -> Waktu:'
+        f' {round(ms, 4)} ms'
+    )
+
+  # --- M2: QUEUE DEQUEUE CIRCULAR ---
+  elif fitur_aktif == 'M2_DEQUEUE_CIRCULAR':
+    try:
+      k = int(entry_index.get())
+    except:
+      k = 1
+    t1 = time.perf_counter()
+    dilayani_naif, _ = q_naif.dequeue_n(k)
+    dilayani_circ, _ = q_circ.dequeue_n(k)
+
+    if dilayani_circ:
+      undo_stack.push(('QUEUE_DEQUEUE', dilayani_circ, None))
+      redo_stack = Stack()
+
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
+
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    text_ringkasan = (
+        f'{len(dilayani_circ)} pesanan keluar dari depan antrean'
+        ' circular.\nTidak ada elemen yang digeser. front sekarang'
+        f' {q_circ.front}, rear {q_circ.rear}, kapasitas'
+        f' {q_circ.capacity}.\nSisa antrean circular {q_circ.size():,}.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
+
+    tampilkan_tabel_pesanan(dilayani_circ)
+    cetak_log(
+        f'M2 - Queue Dequeue Circular ({len(dilayani_circ)} data) -> Waktu:'
+        f' {round(ms, 4)} ms'
+    )
+
   # --- M2: STACK UNDO ---
   elif fitur_aktif == 'M2_UNDO':
     if undo_stack.is_empty():
@@ -669,37 +766,46 @@ def eksekusi_fitur():
 
     t1 = time.perf_counter()
     aksi = undo_stack.pop()
-    jenis, pesanan, pos = aksi[0], aksi[1], aksi[2]
+    jenis, payload, pos = aksi[0], aksi[1], aksi[2]
 
     if jenis == 'ARR_TAMBAH':
       data_array.delete(pos)
-      redo_stack.push(('ARR_TAMBAH', pesanan, pos))
-      pesan = f'Membatalkan penambahan Array: {pesanan.oid} ({pesanan.pelanggan})'
+      redo_stack.push(('ARR_TAMBAH', payload, pos))
+      pesan = f'Membatalkan penambahan Array: {payload.oid} ({payload.pelanggan})'
     elif jenis == 'ARR_HAPUS':
-      data_array.insert(pos, pesanan)
-      redo_stack.push(('ARR_HAPUS', pesanan, pos))
-      pesan = f'Membatalkan penghapusan Array: {pesanan.oid} ({pesanan.pelanggan})'
+      data_array.insert(pos, payload)
+      redo_stack.push(('ARR_HAPUS', payload, pos))
+      pesan = f'Membatalkan penghapusan Array: {payload.oid} ({payload.pelanggan})'
     elif jenis == 'LL_TAMBAH':
       data_ll.delete(pos)
-      redo_stack.push(('LL_TAMBAH', pesanan, pos))
+      redo_stack.push(('LL_TAMBAH', payload, pos))
       pesan = (
-          f'Membatalkan penambahan LinkedList: {pesanan.oid} ({pesanan.pelanggan})'
+          f'Membatalkan penambahan LinkedList: {payload.oid} ({payload.pelanggan})'
       )
     elif jenis == 'LL_HAPUS':
-      data_ll.insert(pos, pesanan)
-      redo_stack.push(('LL_HAPUS', pesanan, pos))
+      data_ll.insert(pos, payload)
+      redo_stack.push(('LL_HAPUS', payload, pos))
       pesan = (
-          f'Membatalkan penghapusan LinkedList: {pesanan.oid}'
-          f' ({pesanan.pelanggan})'
+          f'Membatalkan penghapusan LinkedList: {payload.oid}'
+          f' ({payload.pelanggan})'
       )
     elif jenis == 'QUEUE_ENQUEUE':
       q_naif.un_enqueue()
       q_circ.un_enqueue()
-      redo_stack.push(('QUEUE_ENQUEUE', pesanan, None))
+      redo_stack.push(('QUEUE_ENQUEUE', payload, None))
       pesan = (
-          f'Membatalkan enqueue: {pesanan.oid} dikeluarkan lagi dari belakang.'
+          f'Membatalkan enqueue: {payload.oid} dikeluarkan lagi dari belakang.'
           f' Panjang antrean sekarang: naif {q_naif.size():,}, circular'
           f' {q_circ.size():,}.'
+      )
+    elif jenis == 'QUEUE_DEQUEUE':
+      q_naif.un_dequeue(payload)
+      q_circ.un_dequeue(payload)
+      redo_stack.push(('QUEUE_DEQUEUE', payload, None))
+      pesan = (
+          f'Membatalkan dequeue: {len(payload)} pesanan dikembalikan ke DEPAN'
+          f' antrean. Panjang antrean sekarang: naif {q_naif.size():,},'
+          f' circular {q_circ.size():,}.'
       )
 
     t2 = time.perf_counter()
@@ -725,41 +831,51 @@ def eksekusi_fitur():
 
     t1 = time.perf_counter()
     aksi = redo_stack.pop()
-    jenis, pesanan, pos = aksi[0], aksi[1], aksi[2]
+    jenis, payload, pos = aksi[0], aksi[1], aksi[2]
 
     if jenis == 'ARR_TAMBAH':
-      data_array.insert(pos, pesanan)
-      undo_stack.push(('ARR_TAMBAH', pesanan, pos))
+      data_array.insert(pos, payload)
+      undo_stack.push(('ARR_TAMBAH', payload, pos))
       pesan = (
-          f'Mengerjakan ulang penambahan Array: {pesanan.oid} ({pesanan.pelanggan})'
+          f'Mengerjakan ulang penambahan Array: {payload.oid} ({payload.pelanggan})'
       )
     elif jenis == 'ARR_HAPUS':
       data_array.delete(pos)
-      undo_stack.push(('ARR_HAPUS', pesanan, pos))
+      undo_stack.push(('ARR_HAPUS', payload, pos))
       pesan = (
-          f'Mengerjakan ulang penghapusan Array: {pesanan.oid}'
-          f' ({pesanan.pelanggan})'
+          f'Mengerjakan ulang penghapusan Array: {payload.oid}'
+          f' ({payload.pelanggan})'
       )
     elif jenis == 'LL_TAMBAH':
-      data_ll.insert(pos, pesanan)
-      undo_stack.push(('LL_TAMBAH', pesanan, pos))
+      data_ll.insert(pos, payload)
+      undo_stack.push(('LL_TAMBAH', payload, pos))
       pesan = (
           'Mengerjakan ulang penambahan LinkedList:'
-          f' {pesanan.oid} ({pesanan.pelanggan})'
+          f' {payload.oid} ({payload.pelanggan})'
       )
     elif jenis == 'LL_HAPUS':
       data_ll.delete(pos)
-      undo_stack.push(('LL_HAPUS', pesanan, pos))
+      undo_stack.push(('LL_HAPUS', payload, pos))
       pesan = (
           'Mengerjakan ulang penghapusan LinkedList:'
-          f' {pesanan.oid} ({pesanan.pelanggan})'
+          f' {payload.oid} ({payload.pelanggan})'
       )
     elif jenis == 'QUEUE_ENQUEUE':
-      q_naif.enqueue(pesanan)
-      q_circ.enqueue(pesanan)
-      undo_stack.push(('QUEUE_ENQUEUE', pesanan, None))
+      q_naif.enqueue(payload)
+      q_circ.enqueue(payload)
+      undo_stack.push(('QUEUE_ENQUEUE', payload, None))
       pesan = (
-          f'Enqueue dikerjakan lagi: {pesanan.oid} masuk kembali ke belakang.'
+          f'Enqueue dikerjakan lagi: {payload.oid} masuk kembali ke belakang.'
+          f' Panjang antrean sekarang: naif {q_naif.size():,}, circular'
+          f' {q_circ.size():,}.'
+      )
+    elif jenis == 'QUEUE_DEQUEUE':
+      k = len(payload)
+      q_naif.dequeue_n(k)
+      q_circ.dequeue_n(k)
+      undo_stack.push(('QUEUE_DEQUEUE', payload, None))
+      pesan = (
+          f'Dequeue dikerjakan lagi: {k} pesanan keluar kembali dari depan.'
           f' Panjang antrean sekarang: naif {q_naif.size():,}, circular'
           f' {q_circ.size():,}.'
       )
@@ -968,6 +1084,24 @@ tk.Button(
     bg='#f8f9fa',
     bd=1,
     command=lambda: pilih_fitur('M2_ENQUEUE'),
+).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(
+    frame_kiri,
+    text='QUEUE - DEQUEUE NAIF',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('M2_DEQUEUE_NAIF'),
+).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(
+    frame_kiri,
+    text='QUEUE - DEQUEUE CIRCULAR',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('M2_DEQUEUE_CIRCULAR'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
 

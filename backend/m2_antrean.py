@@ -1,6 +1,3 @@
-# backend/m2_antrean.py
-
-
 class Stack:
 
   def __init__(self, capacity=10):
@@ -181,6 +178,26 @@ class AntreanNaif:
     self.data[self.count] = x
     self.count += 1
 
+  def dequeue_n(self, k=1):
+    if self.count == 0:
+      return [], 0
+    k = min(k, self.count)
+    dilayani = []
+    for i in range(k):
+      dilayani.append(self.data[i])
+
+    sisa = self.count - k
+    total_geseran = 0
+    for i in range(sisa):
+      self.data[i] = self.data[i + k]
+      total_geseran += 1
+
+    for i in range(sisa, self.count):
+      self.data[i] = None
+
+    self.count = sisa
+    return dilayani, total_geseran
+
   def un_enqueue(self):
     if self.count == 0:
       return None
@@ -188,6 +205,21 @@ class AntreanNaif:
     val = self.data[self.count]
     self.data[self.count] = None
     return val
+
+  def un_dequeue(self, daftar_pesanan):
+    k = len(daftar_pesanan)
+    while self.count + k > self.capacity:
+      self._resize(self.capacity * 2)
+
+    # Geser elemen yang ada ke kanan sejauh k petak
+    for i in range(self.count - 1, -1, -1):
+      self.data[i + k] = self.data[i]
+
+    # Kembalikan daftar pesanan ke depan (indeks 0..k-1)
+    for i in range(k):
+      self.data[i] = daftar_pesanan[i]
+
+    self.count += k
 
   def size(self):
     return self.count
@@ -221,6 +253,19 @@ class AntreanMelingkar:
     self.rear = (self.rear + 1) % self.capacity
     self.count += 1
 
+  def dequeue_n(self, k=1):
+    if self.count == 0:
+      return [], 0
+    k = min(k, self.count)
+    dilayani = []
+    for i in range(k):
+      idx = (self.front + i) % self.capacity
+      dilayani.append(self.data[idx])
+      self.data[idx] = None
+    self.front = (self.front + k) % self.capacity
+    self.count -= k
+    return dilayani, 0
+
   def un_enqueue(self):
     if self.count == 0:
       return None
@@ -229,6 +274,18 @@ class AntreanMelingkar:
     self.data[self.rear] = None
     self.count -= 1
     return val
+
+  def un_dequeue(self, daftar_pesanan):
+    k = len(daftar_pesanan)
+    while self.count + k > self.capacity:
+      self._resize(self.capacity * 2)
+
+    # Mundurkan penunjuk front sejauh k langkah
+    self.front = (self.front - k + self.capacity) % self.capacity
+    for i in range(k):
+      self.data[(self.front + i) % self.capacity] = daftar_pesanan[i]
+
+    self.count += k
 
   def size(self):
     return self.count
