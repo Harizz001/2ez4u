@@ -5,16 +5,24 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-# Import Backend M1 & M2 (Khusus Stack: Postfix, Undo, Redo)
+# Import Backend M1 & M2
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.m1_pesanan import Array, LinkList, Pesanan
-from backend.m2_antrean import Stack, hitung_postfix, ke_postfix
+from backend.m2_antrean import (
+    AntreanMelingkar,
+    AntreanNaif,
+    Stack,
+    hitung_postfix,
+    ke_postfix,
+)
 
 # Global Variable M1
 data_array = Array()
 data_ll = LinkList()
 
-# Global Variable M2 (Stack Undo & Redo)
+# Global Variable M2
+q_naif = AntreanNaif()
+q_circ = AntreanMelingkar()
 undo_stack = Stack()
 redo_stack = Stack()
 
@@ -28,10 +36,12 @@ def cetak_log(pesan):
 
 
 def tombol_load_csv():
-  global data_array, data_ll, undo_stack, redo_stack
+  global data_array, data_ll, q_naif, q_circ, undo_stack, redo_stack
   data_array = Array()
   data_ll = LinkList()
-  undo_stack = Stack()  # Re-inisialisasi agar tidak memicu AttributeError
+  q_naif = AntreanNaif()
+  q_circ = AntreanMelingkar()
+  undo_stack = Stack()
   redo_stack = Stack()
 
   path_file = 'data/pesanan.csv'
@@ -48,6 +58,7 @@ def tombol_load_csv():
   header = next(reader)
 
   count = 0
+  count_antre = 0
   for row in reader:
     p = Pesanan(
         row[0],
@@ -62,14 +73,25 @@ def tombol_load_csv():
     )
     data_array.append(p)
     data_ll.append(p)
+
+    if p.status == 'ANTRE':
+      q_naif.enqueue(p)
+      q_circ.enqueue(p)
+      count_antre += 1
+
     count += 1
 
   f.close()
   t2 = time.perf_counter()
   ms = (t2 - t1) * 1000
 
-  label_status.config(text=f'Status: {count} data dimuat')
-  cetak_log(f'Load CSV Selesai ({count} data) -> Waktu: {round(ms, 2)} ms')
+  label_status.config(
+      text=f'Status: {count} data dimuat | Antrean ANTRE: {count_antre}'
+  )
+  cetak_log(
+      f'Load CSV Selesai ({count} data, {count_antre} ANTRE) -> Waktu:'
+      f' {round(ms, 2)} ms'
+  )
 
 
 def buat_pesanan_baru(prioritas):
@@ -97,6 +119,35 @@ def reset_input_form():
   entry_nama.insert(0, 'Pelanggan Baru')
   entry_index.delete(0, tk.END)
   entry_index.insert(0, '0')
+
+
+def tampilkan_tabel_pesanan(daftar_pesanan):
+  text_hasil.pack_forget()
+  lbl_ringkasan.pack_forget()
+  frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
+
+  kolom = ('no', 'oid', 'pelanggan', 'resto', 'menu', 'harga', 'status')
+  tree_hasil['columns'] = kolom
+  for c in kolom:
+    tree_hasil.heading(c, text=c, anchor='w')
+
+  tree_hasil.column('no', width=40, minwidth=30)
+  tree_hasil.column('oid', width=90, minwidth=70)
+  tree_hasil.column('pelanggan', width=150, minwidth=100)
+  tree_hasil.column('resto', width=120, minwidth=90)
+  tree_hasil.column('menu', width=120, minwidth=90)
+  tree_hasil.column('harga', width=80, minwidth=60)
+  tree_hasil.column('status', width=80, minwidth=60)
+
+  for item in tree_hasil.get_children():
+    tree_hasil.delete(item)
+
+  for idx, p in enumerate(daftar_pesanan, 1):
+    tree_hasil.insert(
+        '',
+        tk.END,
+        values=(idx, p.oid, p.pelanggan, p.resto, p.menu, p.harga, p.status),
+    )
 
 
 def pilih_fitur(kode_fitur):
@@ -244,7 +295,7 @@ def pilih_fitur(kode_fitur):
     entry_index.grid(row=0, column=1, padx=5, pady=5, sticky='w')
     btn_eksekusi.config(text='HAPUS', bg='#c0392b', fg='white')
 
-  # --- M2 FITUR (STACK) ---
+  # --- M2 FITUR ---
   elif kode_fitur == 'M2_POSTFIX':
     lbl_judul_fitur.config(text='Stack: hitung struk lewat postfix')
     lbl_sub_fitur.config(
@@ -274,9 +325,20 @@ def pilih_fitur(kode_fitur):
     )
     btn_eksekusi.config(text='REDO', bg='#2980b9', fg='white')
 
+  elif kode_fitur == 'M2_ENQUEUE':
+    lbl_judul_fitur.config(text='Queue: pesanan baru masuk ke belakang')
+    lbl_sub_fitur.config(
+        text='Menambah pesanan di ujung belakang kedua antrean sekaligus.'
+    )
+    lbl_nama.config(text='Nama pelanggan:')
+    lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_input_form()
+    btn_eksekusi.config(text='ENQUEUE', bg='#0056b3', fg='white')
+
 
 def eksekusi_fitur():
-  global undo_stack, redo_stack
+  global q_naif, q_circ, undo_stack, redo_stack
 
   # --- EKSEKUSI M1 ---
   if fitur_aktif == 'ARR_LIHAT_INDEKS':
@@ -575,6 +637,27 @@ def eksekusi_fitur():
 
     cetak_log(f'M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms')
 
+  # --- M2: QUEUE ENQUEUE ---
+  elif fitur_aktif == 'M2_ENQUEUE':
+    p = buat_pesanan_baru(2)
+    t1 = time.perf_counter()
+    q_naif.enqueue(p)
+    q_circ.enqueue(p)
+    undo_stack.push(('QUEUE_ENQUEUE', p, None))
+    redo_stack = Stack()
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
+
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    text_ringkasan = (
+        f'{p.oid} masuk ke barisan paling belakang pada KEDUA antrean.\nPanjang'
+        f' sekarang: naif {q_naif.size():,}, circular {q_circ.size():,}.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
+
+    tampilkan_tabel_pesanan([p])
+    cetak_log(f'M2 - Queue Enqueue ({p.oid}) -> Waktu: {round(ms, 4)} ms')
+
   # --- M2: STACK UNDO ---
   elif fitur_aktif == 'M2_UNDO':
     if undo_stack.is_empty():
@@ -608,6 +691,15 @@ def eksekusi_fitur():
       pesan = (
           f'Membatalkan penghapusan LinkedList: {pesanan.oid}'
           f' ({pesanan.pelanggan})'
+      )
+    elif jenis == 'QUEUE_ENQUEUE':
+      q_naif.un_enqueue()
+      q_circ.un_enqueue()
+      redo_stack.push(('QUEUE_ENQUEUE', pesanan, None))
+      pesan = (
+          f'Membatalkan enqueue: {pesanan.oid} dikeluarkan lagi dari belakang.'
+          f' Panjang antrean sekarang: naif {q_naif.size():,}, circular'
+          f' {q_circ.size():,}.'
       )
 
     t2 = time.perf_counter()
@@ -661,6 +753,15 @@ def eksekusi_fitur():
       pesan = (
           'Mengerjakan ulang penghapusan LinkedList:'
           f' {pesanan.oid} ({pesanan.pelanggan})'
+      )
+    elif jenis == 'QUEUE_ENQUEUE':
+      q_naif.enqueue(pesanan)
+      q_circ.enqueue(pesanan)
+      undo_stack.push(('QUEUE_ENQUEUE', pesanan, None))
+      pesan = (
+          f'Enqueue dikerjakan lagi: {pesanan.oid} masuk kembali ke belakang.'
+          f' Panjang antrean sekarang: naif {q_naif.size():,}, circular'
+          f' {q_circ.size():,}.'
       )
 
     t2 = time.perf_counter()
@@ -822,7 +923,7 @@ tk.Button(
     command=lambda: pilih_fitur('LL_HAPUS'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# KELOMPOK M2 (STACK Saja)
+# KELOMPOK M2
 lbl_m2 = tk.Label(
     frame_kiri,
     text='M2 - STACK DAN QUEUE',
@@ -858,6 +959,15 @@ tk.Button(
     bg='#f8f9fa',
     bd=1,
     command=lambda: pilih_fitur('M2_REDO'),
+).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(
+    frame_kiri,
+    text='QUEUE - ENQUEUE',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('M2_ENQUEUE'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
 
@@ -908,7 +1018,7 @@ lbl_ringkasan = tk.Label(
     frame_kanan, text='', font=('Arial', 10), justify='left', anchor='w'
 )
 
-# Area Tabel Treeview (khusus Postfix)
+# Area Tabel Treeview
 frame_tabel = tk.Frame(frame_kanan)
 tree_hasil = ttk.Treeview(frame_tabel, show='headings')
 scroll_y = ttk.Scrollbar(
