@@ -31,8 +31,8 @@ def tombol_load_csv():
   global data_array, data_ll, undo_stack, redo_stack
   data_array = Array()
   data_ll = LinkList()
-  undo_stack.clear()
-  redo_stack.clear()
+  undo_stack = Stack()  # Re-inisialisasi agar tidak memicu AttributeError
+  redo_stack = Stack()
 
   path_file = 'data/pesanan.csv'
   if not os.path.exists(path_file):
@@ -327,7 +327,7 @@ def eksekusi_fitur():
     t1 = time.perf_counter()
     data_array.append(p)
     undo_stack.push(('ARR_TAMBAH', p, data_array.size - 1))
-    redo_stack.clear()
+    redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -347,7 +347,7 @@ def eksekusi_fitur():
     t1 = time.perf_counter()
     data_array.insert(pos, p)
     undo_stack.push(('ARR_TAMBAH', p, pos))
-    redo_stack.clear()
+    redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -366,7 +366,7 @@ def eksekusi_fitur():
     t1 = time.perf_counter()
     data_array.insert(0, p)
     undo_stack.push(('ARR_TAMBAH', p, 0))
-    redo_stack.clear()
+    redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -388,7 +388,7 @@ def eksekusi_fitur():
     p = data_array.delete(idx)
     if p != None:
       undo_stack.push(('ARR_HAPUS', p, idx))
-      redo_stack.clear()
+      redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -451,7 +451,7 @@ def eksekusi_fitur():
     t1 = time.perf_counter()
     data_ll.append(p)
     undo_stack.push(('LL_TAMBAH', p, data_ll.size - 1))
-    redo_stack.clear()
+    redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -471,7 +471,7 @@ def eksekusi_fitur():
     t1 = time.perf_counter()
     data_ll.insert(pos, p)
     undo_stack.push(('LL_TAMBAH', p, pos))
-    redo_stack.clear()
+    redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -490,7 +490,7 @@ def eksekusi_fitur():
     t1 = time.perf_counter()
     data_ll.insert(0, p)
     undo_stack.push(('LL_TAMBAH', p, 0))
-    redo_stack.clear()
+    redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
@@ -512,7 +512,7 @@ def eksekusi_fitur():
     p = data_ll.delete(idx)
     if p != None:
       undo_stack.push(('LL_HAPUS', p, idx))
-      redo_stack.clear()
+      redo_stack = Stack()
     t2 = time.perf_counter()
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)

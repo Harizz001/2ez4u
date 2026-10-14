@@ -31,3 +31,4 @@
 
 - Fix error dimana UI kolom template input nama pelanggan di M1 dan input rumus M2 muncul sama
 - Mengerjakan Undo dan Redo (M2)
+- Fix error dimana data tidak mau load
