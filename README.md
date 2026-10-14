@@ -41,3 +41,7 @@
 - Menambah opsi drop-down agar mencakup seluruh judul tabel
 - Mengerjakan merge sort (M3)
 - Mengerjakan linear search dan (M3)
+
+### 15 Oktober
+
+- Finishing UI M3
