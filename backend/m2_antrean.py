@@ -1,9 +1,14 @@
+# ==========================================
+# STRUKTUR DATA STACK (TUMPUKAN LIFO)
+# ==========================================
 class Stack:
+
+  """Struktur data Stack berbasis Array Dinamis (Last-In, First-Out)."""
 
   def __init__(self, capacity=10):
     self.capacity = capacity
     self.data = [None] * capacity
-    self.top = 0
+    self.top = 0  # Penunjuk jumlah elemen sekaligus indeks teratas berikutnya
 
   def is_empty(self):
     return self.top == 0
@@ -12,6 +17,7 @@ class Stack:
     return self.top == self.capacity
 
   def _resize(self, new_capacity):
+    """Ekspansi kapasitas array stack."""
     new_data = [None] * new_capacity
     for i in range(self.top):
       new_data[i] = self.data[i]
@@ -19,12 +25,14 @@ class Stack:
     self.capacity = new_capacity
 
   def push(self, x):
+    """Memasukkan elemen ke puncak tumpukan - O(1)."""
     if self.is_full():
       self._resize(self.capacity * 2)
     self.data[self.top] = x
     self.top += 1
 
   def pop(self):
+    """Mengambil elemen teratas dari tumpukan - O(1)."""
     if self.is_empty():
       return None
     self.top -= 1
@@ -33,6 +41,7 @@ class Stack:
     return val
 
   def peek(self):
+    """Melihat elemen teratas tanpa mengeluarankannya."""
     if self.is_empty():
       return None
     return self.data[self.top - 1]
@@ -41,8 +50,11 @@ class Stack:
     return self.top
 
 
-# --- MODUL MESIN KASIR (INFIX KE POSTFIX & EVALUASI) ---
+# ==========================================
+# MODUL POSTFIX (KASIR & STRUK BELANJA)
+# ==========================================
 def tokenisasi(ekspresi):
+  """Memecah string ekspresi matematika infix menjadi daftar token operator & operand."""
   tokens = []
   i = 0
   n = len(ekspresi)
@@ -66,6 +78,7 @@ def tokenisasi(ekspresi):
 
 
 def ke_postfix(ekspresi):
+  """Konversi Infix ke Postfix menggunakan Algoritma Shunting-yard berbasis Stack."""
   tokens = tokenisasi(ekspresi)
   output = []
   op_stack = Stack()
@@ -104,6 +117,7 @@ def ke_postfix(ekspresi):
     out_str = ' '.join(output)
     langkah_log.append((t, tindakan, stk_str, out_str))
 
+  # Mengeluarkan sisa operator di stack
   while not op_stack.is_empty():
     output.append(op_stack.pop())
     stk_str = (
@@ -118,6 +132,7 @@ def ke_postfix(ekspresi):
 
 
 def hitung_postfix(postfix_tokens):
+  """Mengevaluasi ekspresi postfix menggunakan Stack untuk menghasilkan total belanja."""
   val_stack = Stack()
   langkah_log = []
 
@@ -154,8 +169,12 @@ def hitung_postfix(postfix_tokens):
   return total, langkah_log
 
 
-# --- STRUKTUR DATA ANTREAN NAIF DAN CIRCULAR ---
+# ==========================================
+# STRUKTUR DATA QUEUE (ANTREAN FIFO)
+# ==========================================
 class AntreanNaif:
+
+  """Queue Naif: Mengambil elemen depan membutuhkan pergeseran seluruh sisa elemen - Dequeue O(n)."""
 
   def __init__(self, capacity=10):
     self.capacity = capacity
@@ -173,12 +192,14 @@ class AntreanNaif:
     self.capacity = new_capacity
 
   def enqueue(self, x):
+    """Menambah antrean di ujung belakang - O(1)."""
     if self.is_full():
       self._resize(self.capacity * 2)
     self.data[self.count] = x
     self.count += 1
 
   def dequeue_n(self, k=1):
+    """Melayani K pesanan terdepan -> Menggeser sisa elemen ke kiri - O(n)."""
     if self.count == 0:
       return [], 0
     k = min(k, self.count)
@@ -199,6 +220,7 @@ class AntreanNaif:
     return dilayani, total_geseran
 
   def un_enqueue(self):
+    """Fitur Undo Enqueue: Menghapus data paling belakang."""
     if self.count == 0:
       return None
     self.count -= 1
@@ -207,15 +229,14 @@ class AntreanNaif:
     return val
 
   def un_dequeue(self, daftar_pesanan):
+    """Fitur Undo Dequeue: Mengembalikan pesanan ke barisan paling depan."""
     k = len(daftar_pesanan)
     while self.count + k > self.capacity:
       self._resize(self.capacity * 2)
 
-    # Geser elemen yang ada ke kanan sejauh k petak
     for i in range(self.count - 1, -1, -1):
       self.data[i + k] = self.data[i]
 
-    # Kembalikan daftar pesanan ke depan (indeks 0..k-1)
     for i in range(k):
       self.data[i] = daftar_pesanan[i]
 
@@ -227,17 +248,20 @@ class AntreanNaif:
 
 class AntreanMelingkar:
 
+  """Queue Circular: Menggunakan pointer Front & Rear dengan arsitektur buffer melingkar - Dequeue O(1)."""
+
   def __init__(self, capacity=10):
     self.capacity = capacity
     self.data = [None] * capacity
-    self.front = 0
-    self.rear = 0
-    self.count = 0
+    self.front = 0  # Penunjuk indeks elemen terdepan
+    self.rear = 0  # Penunjuk indeks posisi masuk berikutnya
+    self.count = 0  # Jumlah total elemen terisi
 
   def is_full(self):
     return self.count == self.capacity
 
   def _resize(self, new_capacity):
+    """Merapikan urutan buffer melingkar saat membesar."""
     new_data = [None] * new_capacity
     for i in range(self.count):
       new_data[i] = self.data[(self.front + i) % self.capacity]
@@ -247,6 +271,7 @@ class AntreanMelingkar:
     self.capacity = new_capacity
 
   def enqueue(self, x):
+    """Menambah antrean di rear pointer menggunakan modulo - O(1)."""
     if self.is_full():
       self._resize(self.capacity * 2)
     self.data[self.rear] = x
@@ -254,6 +279,7 @@ class AntreanMelingkar:
     self.count += 1
 
   def dequeue_n(self, k=1):
+    """Melayani K pesanan dengan memajukan front pointer -> Tanpa pergeseran array - O(1)."""
     if self.count == 0:
       return [], 0
     k = min(k, self.count)
@@ -267,6 +293,7 @@ class AntreanMelingkar:
     return dilayani, 0
 
   def un_enqueue(self):
+    """Fitur Undo Enqueue: Mundurkan pointer rear."""
     if self.count == 0:
       return None
     self.rear = (self.rear - 1 + self.capacity) % self.capacity
@@ -276,11 +303,11 @@ class AntreanMelingkar:
     return val
 
   def un_dequeue(self, daftar_pesanan):
+    """Fitur Undo Dequeue: Mundurkan pointer front dan masukkan data kembali."""
     k = len(daftar_pesanan)
     while self.count + k > self.capacity:
       self._resize(self.capacity * 2)
 
-    # Mundurkan penunjuk front sejauh k langkah
     self.front = (self.front - k + self.capacity) % self.capacity
     for i in range(k):
       self.data[(self.front + i) % self.capacity] = daftar_pesanan[i]

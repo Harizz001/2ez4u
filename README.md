@@ -45,3 +45,4 @@
 ### 15 Oktober
 
 - Finishing UI M3
+- Menambahkan command di M1, M2, dan M3 untuk menjelaskan setiap fungsi

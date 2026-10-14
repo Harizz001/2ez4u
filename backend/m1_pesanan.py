@@ -1,174 +1,201 @@
 class Pesanan:
-    def __init__(self, oid, pelanggan, resto, menu, harga, prioritas, t_masuk, t_selesai, status):
-        self.oid = oid
-        self.pelanggan = pelanggan
-        self.resto = resto
-        self.menu = menu
-        self.harga = harga
-        self.prioritas = prioritas
-        self.t_masuk = t_masuk
-        self.t_selesai = t_selesai
-        self.status = status
 
+  """Model data untuk merepresentasikan 1 entitas pesanan makanan."""
+
+  def __init__(
+      self,
+      oid,
+      pelanggan,
+      resto,
+      menu,
+      harga,
+      prioritas,
+      masuk,
+      selesai,
+      status,
+  ):
+    self.oid = oid  # Order ID (misal: 'O-000001')
+    self.pelanggan = pelanggan  # Nama pelanggan
+    self.resto = resto  # Nama restoran/kantin
+    self.menu = menu  # Menu pesanan
+    self.harga = harga  # Harga pesanan
+    self.prioritas = prioritas  # Tingkat prioritas (1: VIP, 2: Prioritas, 3: Reguler)
+    self.masuk = masuk  # Waktu pesanan masuk
+    self.selesai = selesai  # Waktu pesanan selesai
+    self.status = status  # Status pesanan ('ANTRE', 'PROSES', 'SELESAI')
+
+
+# ==========================================
+# STRUKTUR DATA ARRAY (DYNAMIC ARRAY)
+# ==========================================
 class Array:
-    def __init__(self):
-        self.kapasitas = 10
-        self.size = 0
-        self.data = [None] * self.kapasitas
 
-    def append(self, v):
-        """"
-        Tambah pesanan REGULER di barisan paling belakang
-        """
-        if self.size == self.kapasitas:
-            self.kapasitas = self.kapasitas * 2
-            data_baru = [None] * self.kapasitas
-            for i in range(self.size):
-                data_baru[i] = self.data[i]
-            self.data = data_baru
+  """Struktur data Array dinamis manual dengan alokasi memori berkala."""
 
-        self.data[self.size] = v
-        self.size += 1
+  def __init__(self, capacity=10):
+    self.capacity = capacity
+    self.data = [None] * capacity  # Alokasi memori internal awal
+    self.size = 0  # Jumlah elemen terisi saat ini
 
-    def insert(self, i, v):
-        """
-        Tambah pesanan VIP (i=0) atau PRIORITAS (i=tengah)
-        """
-        if i < 0:
-            i = 0
-        if i > self.size:
-            i = self.size
+  def _resize(self, new_capacity):
+    """Meningkatkan/menyesuaikan kapasitas array ketika memori penuh."""
+    new_data = [None] * new_capacity
+    for i in range(self.size):
+      new_data[i] = self.data[i]
+    self.data = new_data
+    self.capacity = new_capacity
 
-        if self.size == self.kapasitas:
-            self.kapasitas = self.kapasitas * 2
-            data_baru = [None] * self.kapasitas
-            for k in range(self.size):
-                data_baru[k] = self.data[k]
-            self.data = data_baru
+  def append(self, pesanan):
+    """Menambahkan pesanan di posisi paling belakang - O(1) amortized."""
+    if self.size == self.capacity:
+      self._resize(self.capacity * 2)  # Double capacity jika penuh
+    self.data[self.size] = pesanan
+    self.size += 1
 
-        j = self.size
-        while j > i:
-            self.data[j] = self.data[j - 1]
-            j -= 1
+  def insert(self, idx, pesanan):
+    """Menyisipkan pesanan pada indeks tertentu - O(n) karena penggeseran elemen ke kanan."""
+    if idx < 0 or idx > self.size:
+      return False
+    if self.size == self.capacity:
+      self._resize(self.capacity * 2)
 
-        self.data[i] = v
-        self.size += 1
+    # Geser elemen ke kanan dari indeks paling belakang hingga idx
+    for i in range(self.size, idx, -1):
+      self.data[i] = self.data[i - 1]
 
-    def get(self, i):
-        """
-        Lihat pesanan berdasarkan indeks ke-i
-        """
-        if i >= 0 and i < self.size:
-            return self.data[i]
-        return None
+    self.data[idx] = pesanan
+    self.size += 1
+    return True
 
-    def delete(self, i):
-        """
-        Hapus pesanan berdasarkan indeks ke-i
-        """
-        if i >= 0 and i < self.size:
-            hasil = self.data[i]
-            for j in range(i, self.size - 1):
-                self.data[j] = self.data[j + 1]
-            self.data[self.size - 1] = None
-            self.size -= 1
-            return hasil
+  def delete(self, idx):
+    """Menghapus pesanan pada indeks tertentu - O(n) karena penggeseran elemen ke kiri."""
+    if idx < 0 or idx >= self.size:
+      return None
+    val = self.data[idx]
 
-    def cari_by_oid(self, target_oid):
-        """Mencari pesanan berdasarkan OID (contoh: 'O-000005')"""
-        for i in range(self.size):
-            if self.data[i].oid.upper() == target_oid.upper():
-                return self.data[i], i
-        return None, -1
+    # Geser elemen ke kiri untuk mengisi kekosongan
+    for i in range(idx, self.size - 1):
+      self.data[i] = self.data[i + 1]
 
+    self.data[self.size - 1] = None
+    self.size -= 1
+    return val
+
+  def get(self, idx):
+    """Mengambil pesanan berdasarkan indeks - O(1) Random Access."""
+    if 0 <= idx < self.size:
+      return self.data[idx]
+    return None
+
+  def cari_by_oid(self, target_oid):
+    """Pencarian linier pesanan berdasarkan OID - O(n)."""
+    for i in range(self.size):
+      if self.data[i].oid == target_oid:
+        return self.data[i], i
+    return None, -1
+
+
+# ==========================================
+# STRUKTUR DATA LINKED LIST
+# ==========================================
 class Node:
 
-    def __init__(self, val):
-        self.val = val
-        self.next = None
+  """Elemen/Simpul tunggal pada Linked List."""
+
+  def __init__(self, data):
+    self.data = data
+    self.next = None  # Penunjuk ke node berikutnya
+
 
 class LinkList:
 
-    def __init__(self):
-        self.head = None
+  """Singly Linked List dengan penunjuk Head dan Tail."""
+
+  def __init__(self):
+    self.head = None  # Penunjuk node pertama
+    self.tail = None  # Penunjuk node terakhir
+    self.size = 0  # Jumlah node terpasang
+
+  def append(self, pesanan):
+    """Menambahkan node di posisi akhir via Tail pointer - O(1)."""
+    new_node = Node(pesanan)
+    if self.head is None:
+      self.head = new_node
+      self.tail = new_node
+    else:
+      self.tail.next = new_node
+      self.tail = new_node
+    self.size += 1
+
+  def insert(self, idx, pesanan):
+    """Menyisipkan node pada indeks tertentu - O(n) penelusuran pointer."""
+    if idx < 0 or idx > self.size:
+      return False
+    if idx == 0:
+      # Sisip di awal (VIP) - O(1)
+      new_node = Node(pesanan)
+      new_node.next = self.head
+      self.head = new_node
+      if self.size == 0:
+        self.tail = new_node
+      self.size += 1
+      return True
+    elif idx == self.size:
+      # Sisip di akhir (Reguler) - O(1)
+      self.append(pesanan)
+      return True
+
+    # Sisip di tengah (Prioritas) - O(n)
+    new_node = Node(pesanan)
+    curr = self.head
+    for _ in range(idx - 1):
+      curr = curr.next
+
+    new_node.next = curr.next
+    curr.next = new_node
+    self.size += 1
+    return True
+
+  def delete(self, idx):
+    """Menghapus node pada indeks tertentu - O(n) penelusuran pointer."""
+    if idx < 0 or idx >= self.size or self.head is None:
+      return None
+
+    if idx == 0:
+      val = self.head.data
+      self.head = self.head.next
+      if self.head is None:
         self.tail = None
-        self.size = 0
+      self.size -= 1
+      return val
 
-    def append(self, v):
-        """Tambah pesanan REGULER di posisi paling belakang -> O(1) via tail pointer"""
-        node_baru = Node(v)
-        if self.head is None:
-            self.head = node_baru
-            self.tail = node_baru
-        else:
-            self.tail.next = node_baru
-            self.tail = node_baru
-        self.size += 1
+    curr = self.head
+    for _ in range(idx - 1):
+      curr = curr.next
 
-    def insert(self, i, v):
-        """Tambah VIP (i=0) -> O(1), atau PRIORITAS (i=tengah) -> O(n) traversal"""
-        node_baru = Node(v)
-        if i <= 0:
-            # VIP: Sisip di depan (head)
-            node_baru.next = self.head
-            self.head = node_baru
-            if self.tail is None:
-                self.tail = node_baru
-            self.size += 1
-        elif i >= self.size:
-            # REGULER: Sisip di belakang
-            self.append(v)
-        else:
-            # PRIORITAS: Menelusuri node dari head sampai posisi i-1
-            curr = self.head
-            for k in range(i - 1):
-                curr = curr.next
-            node_baru.next = curr.next
-            curr.next = node_baru
-            self.size += 1
+    val = curr.next.data
+    curr.next = curr.next.next
+    if curr.next is None:
+      self.tail = curr
+    self.size -= 1
+    return val
 
-    def get(self, i):
-        """Lihat pesanan ke-i -> O(n) Traversal"""
-        if i < 0 or i >= self.size:
-            return None
-        curr = self.head
-        for k in range(i):
-            curr = curr.next
-        return curr.val
+  def get(self, idx):
+    """Mengambil data pada indeks tertentu via penelusuran dari Head - O(n)."""
+    if idx < 0 or idx >= self.size:
+      return None
+    curr = self.head
+    for _ in range(idx):
+      curr = curr.next
+    return curr.data
 
-    def delete(self, i):
-        """Hapus pesanan ke-i -> O(n) Traversal"""
-        if i < 0 or i >= self.size:
-            return None
-
-        if i == 0:
-            hasil = self.head.val
-            self.head = self.head.next
-            self.size -= 1
-            if self.size == 0:
-                self.tail = None
-            return hasil
-
-        curr = self.head
-        for k in range(i - 1):
-            curr = curr.next
-
-        hasil = curr.next.val
-        curr.next = curr.next.next
-
-        if curr.next is None:
-            self.tail = curr
-
-        self.size -= 1
-        return hasil
-
-    def cari_by_oid(self, target_oid):
-        """Cari pesanan berdasarkan OID -> O(n) Traversal"""
-        curr = self.head
-        idx = 0
-        while curr is not None:
-            if curr.val.oid.upper() == target_oid.upper():
-                return curr.val, idx
-            curr = curr.next
-            idx += 1
-        return None, -1
+  def cari_by_oid(self, target_oid):
+    """Menelusuri rantai node untuk mencari OID yang cocok - O(n)."""
+    curr = self.head
+    idx = 0
+    while curr:
+      if curr.data.oid == target_oid:
+        return curr.data, idx
+      curr = curr.next
+      idx += 1
+    return None, -1

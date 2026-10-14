@@ -5,7 +5,7 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-# Import Backend M1 & M2
+# Import Backend M1, M2, dan M3
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.m1_pesanan import Array, LinkList, Pesanan
 from backend.m2_antrean import (
@@ -16,17 +16,15 @@ from backend.m2_antrean import (
     ke_postfix,
 )
 from backend.m3_laporan import (
-    insertion_sort,
-    merge_sort,
-    linear_search,
     binary_search,
+    insertion_sort,
+    linear_search,
+    merge_sort,
 )
 
-# Global Variable M1
+# Global Variables untuk Struktur Data Aplikasi
 data_array = Array()
 data_ll = LinkList()
-
-# Global Variable M2
 q_naif = AntreanNaif()
 q_circ = AntreanMelingkar()
 undo_stack = Stack()
@@ -37,11 +35,13 @@ fitur_aktif = 'ARR_LIHAT_INDEKS'
 
 
 def cetak_log(pesan):
+  """Menampilkan pesan pada terminal Command Log di bagian bawah antarmuka."""
   text_log.insert(tk.END, pesan + '\n')
   text_log.see(tk.END)
 
 
 def tombol_load_csv():
+  """Membaca file CSV pesanan dan memuat data ke dalam Array, Linked List, serta Queues."""
   global data_array, data_ll, q_naif, q_circ, undo_stack, redo_stack
   data_array = Array()
   data_ll = LinkList()
@@ -101,6 +101,7 @@ def tombol_load_csv():
 
 
 def buat_pesanan_baru(prioritas):
+  """Membuat objek Pesanan baru secara otomatis dari input form."""
   global id_baru
   oid = 'O-' + str(id_baru)
   id_baru += 1
@@ -121,6 +122,7 @@ def buat_pesanan_baru(prioritas):
 
 
 def reset_input_form():
+  """Mereset nilai input form ke kondisi default."""
   entry_nama.delete(0, tk.END)
   entry_nama.insert(0, 'Pelanggan Baru')
   entry_index.delete(0, tk.END)
@@ -128,6 +130,7 @@ def reset_input_form():
 
 
 def tampilkan_tabel_pesanan(daftar_pesanan):
+  """Menampilkan daftar objek pesanan pada widget Treeview/Tabel."""
   text_hasil.pack_forget()
   lbl_ringkasan.pack_forget()
   frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
@@ -157,28 +160,27 @@ def tampilkan_tabel_pesanan(daftar_pesanan):
 
 
 def pilih_fitur(kode_fitur):
+  """Pengatur tampilan dinamis formulir input sesuai menu aktif di sidebar."""
   global fitur_aktif
   fitur_aktif = kode_fitur
 
-  # Sembunyikan elemen form
+  # Reset susunan komponen form input
   lbl_nama.grid_forget()
   entry_nama.grid_forget()
   lbl_index.grid_forget()
   entry_index.grid_forget()
   combo_kunci.grid_forget()
 
-  # Reset posisi tombol ke kolom 2 (default untuk fitur lainnya)
   entry_nama.config(width=35)
   entry_index.config(width=15)
   btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
 
-  # Reset Tampilan Output ke mode Teks biasa
   lbl_ringkasan.config(text='')
   lbl_ringkasan.pack_forget()
   frame_tabel.pack_forget()
   text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
 
-  # --- M1 FITUR ---
+  # --- CONFIG M1 ---
   if kode_fitur == 'ARR_LIHAT_INDEKS':
     lbl_judul_fitur.config(text='Array: lihat pesanan berdasarkan Indeks (i)')
     lbl_sub_fitur.config(
@@ -307,7 +309,7 @@ def pilih_fitur(kode_fitur):
     entry_index.grid(row=0, column=1, padx=5, pady=5, sticky='w')
     btn_eksekusi.config(text='HAPUS', bg='#c0392b', fg='white')
 
-  # --- M2 FITUR ---
+  # --- CONFIG M2 ---
   elif kode_fitur == 'M2_POSTFIX':
     lbl_judul_fitur.config(text='Stack: hitung struk lewat postfix')
     lbl_sub_fitur.config(
@@ -379,116 +381,107 @@ def pilih_fitur(kode_fitur):
     entry_index.insert(0, '1')
     btn_eksekusi.config(text='DEQUEUE', bg='#0056b3', fg='white')
 
-  # --- M3 FITUR ---
+  # --- CONFIG M3 ---
   elif kode_fitur == 'SORT_INSERTION':
-      lbl_judul_fitur.config(text='Sort: insertion sort, O(n²)')
-      lbl_sub_fitur.config(
-          text=(
-              'Setiap elemen digeser mundur sampai menemukan tempatnya.'
-              ' Sederhana, tetapi kerjanya tumbuh kuadratik.'
-          )
-      )
+    lbl_judul_fitur.config(text='Sort: insertion sort, O(n²)')
+    lbl_sub_fitur.config(
+        text=(
+            'Setiap elemen digeser mundur sampai menemukan tempatnya.'
+            ' Sederhana, tetapi kerjanya tumbuh kuadratik.'
+        )
+    )
 
-      # Perkecil lebar entry jumlah baris
-      entry_index.config(width=8)
+    entry_index.config(width=8)
+    lbl_index.config(text='Jumlah baris:')
+    lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+    entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+    entry_index.delete(0, tk.END)
+    entry_index.insert(0, '10')
 
-      # Input 1: Jumlah Baris (Kolom 0 & 1)
-      lbl_index.config(text='Jumlah baris:')
-      lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
-      entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
-      entry_index.delete(0, tk.END)
-      entry_index.insert(0, '10')
+    lbl_nama.config(text='Urutkan menurut:')
+    lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+    combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
 
-      # Input 2: Kunci Urut pakai Dropdown/Combobox (Kolom 2 & 3)
-      lbl_nama.config(text='Urutkan menurut:')
-      lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
-      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
-
-      # Tombol URUTKAN (Kolom 4)
-      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
-      btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
+    btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+    btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'SORT_MERGE':
-      lbl_judul_fitur.config(text='Sort: merge sort, O(n log n)')
-      lbl_sub_fitur.config(
-          text=(
-              'Membagi data secara rekursif menjadi dua bagian lalu'
-              ' menggabungkannya secara terurut. Sangat efisien dan stabil.'
-          )
-      )
+    lbl_judul_fitur.config(text='Sort: merge sort, O(n log n)')
+    lbl_sub_fitur.config(
+        text=(
+            'Membagi data secara rekursif menjadi dua bagian lalu'
+            ' menggabungkannya secara terurut.'
+        )
+    )
 
-      entry_index.config(width=8)
+    entry_index.config(width=8)
+    lbl_index.config(text='Jumlah baris:')
+    lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+    entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+    entry_index.delete(0, tk.END)
+    entry_index.insert(0, '10')
 
-      # Input 1: Jumlah Baris (Kolom 0 & 1)
-      lbl_index.config(text='Jumlah baris:')
-      lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
-      entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
-      entry_index.delete(0, tk.END)
-      entry_index.insert(0, '10')
+    lbl_nama.config(text='Urutkan menurut:')
+    lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+    combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
 
-      # Input 2: Kunci Urut pakai Dropdown/Combobox (Kolom 2 & 3)
-      lbl_nama.config(text='Urutkan menurut:')
-      lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
-      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
-
-      # Tombol URUTKAN (Kolom 4)
-      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
-      btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
+    btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+    btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'SEARCH_LINEAR':
-      lbl_judul_fitur.config(text='Search: linear search, O(n)')
-      lbl_sub_fitur.config(
-          text=(
-              'Mencari data dari awal sampai akhir satu per satu secara'
-              ' berurutan.'
-          )
-      )
+    lbl_judul_fitur.config(text='Search: linear search, O(n)')
+    lbl_sub_fitur.config(
+        text=(
+            'Mencari data dari awal sampai akhir satu per satu secara'
+            ' berurutan.'
+        )
+    )
 
-      entry_nama.config(width=20)
+    entry_nama.config(width=20)
+    lbl_nama.config(text='Kata kunci:')
+    lbl_nama.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+    entry_nama.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+    entry_nama.delete(0, tk.END)
+    entry_nama.insert(0, 'kafe-teknik')
 
-      lbl_nama.config(text='Kata kunci:')
-      lbl_nama.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
-      entry_nama.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
-      entry_nama.delete(0, tk.END)
-      entry_nama.insert(0, 'kafe-teknik')
+    lbl_index.config(text='Cari di kolom:')
+    lbl_index.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+    combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+    combo_kunci.set('resto')
 
-      lbl_index.config(text='Cari di kolom:')
-      lbl_index.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
-      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
-      combo_kunci.set('resto')
-
-      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
-      btn_eksekusi.config(text='CARI', bg='#0056b3', fg='white')
+    btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+    btn_eksekusi.config(text='CARI', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'SEARCH_BINARY':
-      lbl_judul_fitur.config(text='Search: binary search, O(log n)')
-      lbl_sub_fitur.config(
-          text=(
-              'Membagi dua ruang pencarian secara berulang. Memerlukan data'
-              ' yang sudah terurut.'
-          )
-      )
+    lbl_judul_fitur.config(text='Search: binary search, O(log n)')
+    lbl_sub_fitur.config(
+        text=(
+            'Membagi dua ruang pencarian secara berulang. Memerlukan data'
+            ' yang sudah terurut.'
+        )
+    )
 
-      entry_nama.config(width=20)
+    entry_nama.config(width=20)
+    lbl_nama.config(text='Kata kunci:')
+    lbl_nama.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+    entry_nama.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+    entry_nama.delete(0, tk.END)
+    entry_nama.insert(0, 'kafe-teknik')
 
-      lbl_nama.config(text='Kata kunci:')
-      lbl_nama.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
-      entry_nama.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
-      entry_nama.delete(0, tk.END)
-      entry_nama.insert(0, 'kafe-teknik')
+    lbl_index.config(text='Cari di kolom:')
+    lbl_index.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+    combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+    combo_kunci.set('resto')
 
-      lbl_index.config(text='Cari di kolom:')
-      lbl_index.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
-      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
-      combo_kunci.set('resto')
+    btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+    btn_eksekusi.config(text='CARI', bg='#0056b3', fg='white')
 
-      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
-      btn_eksekusi.config(text='CARI', bg='#0056b3', fg='white')
 
 def eksekusi_fitur():
+  """Router eksekusi logika backend berdasarkan tombol yang diklik user."""
   global q_naif, q_circ, undo_stack, redo_stack
 
-  # --- EKSEKUSI M1 ---
+  # --- M1 EXECUTION ---
   if fitur_aktif == 'ARR_LIHAT_INDEKS':
     try:
       idx = int(entry_index.get())
@@ -542,10 +535,10 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-    tk.END,
-    'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
-    f'{p.oid} - {p.pelanggan}',
-)
+        tk.END,
+        'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
+        f'{p.oid} - {p.pelanggan}',
+    )
     cetak_log(
         f'ARRAY - Tambah Reguler ({p.oid}) di belakang -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -581,9 +574,9 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-    tk.END,
-    f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
-)
+        tk.END,
+        f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
+    )
     cetak_log(
         f'ARRAY - Tambah VIP ({p.oid}) di depan (0) -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -604,9 +597,9 @@ def eksekusi_fitur():
     text_hasil.delete('1.0', tk.END)
     if p != None:
       text_hasil.insert(
-    tk.END,
-    f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
-)
+          tk.END,
+          f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
+      )
       cetak_log(
           f'ARRAY - Hapus index {idx} ({p.oid}) -> Waktu: {round(ms, 4)} ms'
       )
@@ -666,10 +659,10 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-    tk.END,
-    'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
-    f'{p.oid} - {p.pelanggan}',
-)
+        tk.END,
+        'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
+        f'{p.oid} - {p.pelanggan}',
+    )
     cetak_log(
         f'LINKEDLIST - Tambah Reguler ({p.oid}) di belakang -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -705,9 +698,9 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-    tk.END,
-    f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
-)
+        tk.END,
+        f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
+    )
     cetak_log(
         f'LINKEDLIST - Tambah VIP ({p.oid}) di depan (0) -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -728,16 +721,16 @@ def eksekusi_fitur():
     text_hasil.delete('1.0', tk.END)
     if p != None:
       text_hasil.insert(
-    tk.END,
-    f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
-)
+          tk.END,
+          f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
+      )
       cetak_log(
           f'LINKEDLIST - Hapus index {idx} ({p.oid}) -> Waktu: {round(ms, 4)} ms'
       )
     else:
       text_hasil.insert(tk.END, 'Gagal menghapus, indeks tidak valid!')
 
-  # --- M2: STACK POSTFIX ---
+  # --- M2 EXECUTION ---
   elif fitur_aktif == 'M2_POSTFIX':
     expr = entry_nama.get().strip()
     t1 = time.perf_counter()
@@ -785,7 +778,6 @@ def eksekusi_fitur():
 
     cetak_log(f'M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms')
 
-  # --- M2: QUEUE ENQUEUE ---
   elif fitur_aktif == 'M2_ENQUEUE':
     p = buat_pesanan_baru(2)
     t1 = time.perf_counter()
@@ -806,7 +798,6 @@ def eksekusi_fitur():
     tampilkan_tabel_pesanan([p])
     cetak_log(f'M2 - Queue Enqueue ({p.oid}) -> Waktu: {round(ms, 4)} ms')
 
-  # --- M2: QUEUE DEQUEUE NAIF ---
   elif fitur_aktif == 'M2_DEQUEUE_NAIF':
     try:
       k = int(entry_index.get())
@@ -840,7 +831,6 @@ def eksekusi_fitur():
         f' {round(ms, 4)} ms'
     )
 
-  # --- M2: QUEUE DEQUEUE CIRCULAR ---
   elif fitur_aktif == 'M2_DEQUEUE_CIRCULAR':
     try:
       k = int(entry_index.get())
@@ -872,7 +862,6 @@ def eksekusi_fitur():
         f' {round(ms, 4)} ms'
     )
 
-  # --- M2: STACK UNDO ---
   elif fitur_aktif == 'M2_UNDO':
     if undo_stack.is_empty():
       text_hasil.delete('1.0', tk.END)
@@ -936,7 +925,6 @@ def eksekusi_fitur():
     )
     cetak_log(f'M2 - Stack Undo -> Waktu: {round(ms, 4)} ms')
 
-  # --- M2: STACK REDO ---
   elif fitur_aktif == 'M2_REDO':
     if redo_stack.is_empty():
       text_hasil.delete('1.0', tk.END)
@@ -1008,148 +996,142 @@ def eksekusi_fitur():
     )
     cetak_log(f'M2 - Stack Redo -> Waktu: {round(ms, 4)} ms')
 
+  # --- M3 EXECUTION ---
   elif fitur_aktif == 'SORT_INSERTION':
-        try:
-            limit = int(entry_index.get())
-        except:
-            limit = 10
+    try:
+      limit = int(entry_index.get())
+    except:
+      limit = 10
 
-        # Ambil nilai kunci langsung dari Combobox
-        kunci = combo_kunci.get().strip().lower()
-        opsi_valid = ['oid', 'pelanggan', 'resto', 'menu', 'harga', 'status']
-        if kunci not in opsi_valid:
-            kunci = 'harga'
+    kunci = combo_kunci.get().strip().lower()
 
-        if limit > 20000:
-            text_hasil.delete('1.0', tk.END)
-            text_hasil.insert(
-                tk.END,
-                'DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk'
-                ' menghindari freeze!',
-            )
-            return
+    if limit > 20000:
+      text_hasil.delete('1.0', tk.END)
+      text_hasil.insert(
+          tk.END,
+          'DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk'
+          ' menghindari freeze!',
+      )
+      return
 
-        n_data = min(limit, data_array.size)
-        sampel_data = [data_array.get(i) for i in range(n_data)]
+    n_data = min(limit, data_array.size)
+    sampel_data = [data_array.get(i) for i in range(n_data)]
 
-        t1 = time.perf_counter()
-        hasil_sort, perbandingan, pemindahan = insertion_sort(
-            sampel_data, kunci
-        )
-        t2 = time.perf_counter()
-        ms = (t2 - t1) * 1000
+    t1 = time.perf_counter()
+    hasil_sort, perbandingan, pemindahan = insertion_sort(sampel_data, kunci)
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
 
-        lbl_ringkasan.pack(fill=tk.X, pady=5)
-        text_ringkasan = (
-            f'{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,}'
-            f' perbandingan, {pemindahan:,} pemindahan.'
-        )
-        lbl_ringkasan.config(text=text_ringkasan)
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    text_ringkasan = (
+        f'{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,}'
+        f' perbandingan, {pemindahan:,} pemindahan.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
 
-        tampilkan_tabel_pesanan(hasil_sort)
-        cetak_log(
-            f'M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
-            f' {round(ms, 4)} ms'
-        )
+    tampilkan_tabel_pesanan(hasil_sort)
+    cetak_log(
+        f'M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
+        f' {round(ms, 4)} ms'
+    )
 
   elif fitur_aktif == 'SORT_MERGE':
-      try:
-        limit = int(entry_index.get())
-      except:
-        limit = 10
+    try:
+      limit = int(entry_index.get())
+    except:
+      limit = 10
 
-      kunci = combo_kunci.get().strip().lower()
-      opsi_valid = ['oid', 'pelanggan', 'resto', 'menu', 'harga', 'status']
-      if kunci not in opsi_valid:
-        kunci = 'harga'
+    kunci = combo_kunci.get().strip().lower()
 
-      n_data = min(limit, data_array.size)
-      sampel_data = [data_array.get(i) for i in range(n_data)]
+    n_data = min(limit, data_array.size)
+    sampel_data = [data_array.get(i) for i in range(n_data)]
 
-      t1 = time.perf_counter()
-      hasil_sort, perbandingan, pemindahan = merge_sort(sampel_data, kunci)
-      t2 = time.perf_counter()
-      ms = (t2 - t1) * 1000
+    t1 = time.perf_counter()
+    hasil_sort, perbandingan, pemindahan = merge_sort(sampel_data, kunci)
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
 
-      lbl_ringkasan.pack(fill=tk.X, pady=5)
-      text_ringkasan = (
-          f'{n_data} pesanan diurutkan menurut {kunci} (Merge Sort).\n{perbandingan:,}'
-          f' perbandingan, {pemindahan:,} pemindahan/penulisan.'
-      )
-      lbl_ringkasan.config(text=text_ringkasan)
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    text_ringkasan = (
+        f'{n_data} pesanan diurutkan menurut {kunci} (Merge Sort).\n{perbandingan:,}'
+        f' perbandingan, {pemindahan:,} pemindahan.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
 
-      tampilkan_tabel_pesanan(hasil_sort)
-      cetak_log(
-          f'M3 - Merge Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
-          f' {round(ms, 4)} ms'
-      )
+    tampilkan_tabel_pesanan(hasil_sort)
+    cetak_log(
+        f'M3 - Merge Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
+        f' {round(ms, 4)} ms'
+    )
 
   elif fitur_aktif == 'SEARCH_LINEAR':
-      target = entry_nama.get().strip()
-      kunci = combo_kunci.get().strip().lower()
+    target = entry_nama.get().strip()
+    kunci = combo_kunci.get().strip().lower()
 
-      if not target:
-        text_hasil.delete('1.0', tk.END)
-        text_hasil.insert(tk.END, 'Masukkan kata kunci pencarian!')
-        return
+    if not target:
+      text_hasil.delete('1.0', tk.END)
+      text_hasil.insert(tk.END, 'Masukkan kata kunci pencarian!')
+      return
 
-      sampel_data = [data_array.get(i) for i in range(data_array.size)]
+    sampel_data = [data_array.get(i) for i in range(data_array.size)]
 
-      t1 = time.perf_counter()
-      hasil_search, perbandingan = linear_search(sampel_data, kunci, target)
-      t2 = time.perf_counter()
-      ms = (t2 - t1) * 1000
+    t1 = time.perf_counter()
+    hasil_search, perbandingan = linear_search(sampel_data, kunci, target)
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
 
-      lbl_ringkasan.pack(fill=tk.X, pady=5)
-      text_ringkasan = (
-          f"Ditemukan {len(hasil_search):,} data cocok untuk '{target}' di"
-          f' kolom {kunci}.\nTotal perbandingan: {perbandingan:,} kali.'
-      )
-      lbl_ringkasan.config(text=text_ringkasan)
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    text_ringkasan = (
+        f"Ditemukan {len(hasil_search):,} data cocok untuk '{target}' di"
+        f' kolom {kunci}.\nTotal perbandingan: {perbandingan:,} kali.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
 
-      tampilkan_tabel_pesanan(hasil_search)
-      cetak_log(
-          f"M3 - Linear Search ('{target}' di {kunci}) -> {len(hasil_search)}"
-          f' hasil, Waktu: {round(ms, 4)} ms'
-      )
+    tampilkan_tabel_pesanan(hasil_search)
+    cetak_log(
+        f"M3 - Linear Search ('{target}' di {kunci}) -> {len(hasil_search)}"
+        f' hasil, Waktu: {round(ms, 4)} ms'
+    )
 
   elif fitur_aktif == 'SEARCH_BINARY':
-      target = entry_nama.get().strip()
-      kunci = combo_kunci.get().strip().lower()
+    target = entry_nama.get().strip()
+    kunci = combo_kunci.get().strip().lower()
 
-      if not target:
-        text_hasil.delete('1.0', tk.END)
-        text_hasil.insert(tk.END, 'Masukkan kata kunci pencarian!')
-        return
+    if not target:
+      text_hasil.delete('1.0', tk.END)
+      text_hasil.insert(tk.END, 'Masukkan kata kunci pencarian!')
+      return
 
-      sampel_data = [data_array.get(i) for i in range(data_array.size)]
+    sampel_data = [data_array.get(i) for i in range(data_array.size)]
 
-      t1 = time.perf_counter()
-      hasil_search, perbandingan, data_terurut = binary_search(
-          sampel_data, kunci, target
-      )
-      t2 = time.perf_counter()
-      ms = (t2 - t1) * 1000
+    t1 = time.perf_counter()
+    hasil_search, perbandingan, data_terurut = binary_search(
+        sampel_data, kunci, target
+    )
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
 
-      lbl_ringkasan.pack(fill=tk.X, pady=5)
-      text_ringkasan = (
-          f"Ditemukan {len(hasil_search):,} data cocok untuk '{target}' di"
-          f' kolom {kunci} (Data diurutkan otomatis terlebih'
-          f' dahulu).\nTotal perbandingan: {perbandingan:,} kali.'
-      )
-      lbl_ringkasan.config(text=text_ringkasan)
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    text_ringkasan = (
+        f"Ditemukan {len(hasil_search):,} data cocok untuk '{target}' di"
+        f' kolom {kunci} (Data diurutkan otomatis terlebih'
+        f' dahulu).\nTotal perbandingan: {perbandingan:,} kali.'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
 
-      tampilkan_tabel_pesanan(hasil_search)
-      cetak_log(
-          f"M3 - Binary Search ('{target}' di {kunci}) -> {len(hasil_search)}"
-          f' hasil, Waktu: {round(ms, 4)} ms'
-      )
+    tampilkan_tabel_pesanan(hasil_search)
+    cetak_log(
+        f"M3 - Binary Search ('{target}' di {kunci}) -> {len(hasil_search)}"
+        f' hasil, Waktu: {round(ms, 4)} ms'
+    )
 
-# --- UI SETUP TKINTER ---
+
+# --- INITIALIZATION UTAMA TKINTER ---
 root = tk.Tk()
 root.title('2EZ4U Food Delivery')
 root.geometry('900x600')
 
+# Frame Atas (Tombol Load CSV)
 frame_atas = tk.Frame(root, bg='lightblue')
 frame_atas.pack(fill=tk.X)
 
@@ -1168,36 +1150,35 @@ label_status.pack(side=tk.LEFT, padx=10)
 frame_utama = tk.Frame(root)
 frame_utama.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-# --- FRAME KIRI (SIDEBAR MENU WITH SCROLLBAR) ---
+# --- SIDEBAR KIRI DENGAN SCROLLBAR ---
 frame_kiri_outer = tk.Frame(frame_utama, width=280, bd=1, relief=tk.SOLID)
 frame_kiri_outer.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
 
-# Canvas dan Scrollbar untuk mendukung scroll
 canvas_kiri = tk.Canvas(frame_kiri_outer, bd=0, highlightthickness=0, width=250)
-scrollbar_kiri = ttk.Scrollbar(frame_kiri_outer, orient="vertical", command=canvas_kiri.yview)
-
-# Inner frame tempat seluruh tombol diletakkan (variabel tetap 'frame_kiri')
-frame_kiri = tk.Frame(canvas_kiri)
-
-# Update area scroll secara otomatis saat ada elemen baru yang ditambahkan
-frame_kiri.bind(
-    "<Configure>",
-    lambda e: canvas_kiri.configure(scrollregion=canvas_kiri.bbox("all"))
+scrollbar_kiri = ttk.Scrollbar(
+    frame_kiri_outer, orient='vertical', command=canvas_kiri.yview
 )
 
-canvas_kiri.create_window((0, 0), window=frame_kiri, anchor="nw")
+frame_kiri = tk.Frame(canvas_kiri)
+frame_kiri.bind(
+    '<Configure>',
+    lambda e: canvas_kiri.configure(scrollregion=canvas_kiri.bbox('all')),
+)
+
+canvas_kiri.create_window((0, 0), window=frame_kiri, anchor='nw')
 canvas_kiri.configure(yscrollcommand=scrollbar_kiri.set)
 
 scrollbar_kiri.pack(side=tk.RIGHT, fill=tk.Y)
 canvas_kiri.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# Fitur Scroll menggunakan Wheel Mouse (Opsional)
+
 def _on_mousewheel(event):
-    canvas_kiri.yview_scroll(int(-1 * (event.delta / 120)), "units")
+  canvas_kiri.yview_scroll(int(-1 * (event.delta / 120)), 'units')
 
-canvas_kiri.bind_all("<MouseWheel>", _on_mousewheel)
 
-# KELOMPOK M1
+canvas_kiri.bind_all('<MouseWheel>', _on_mousewheel)
+
+# Tombol Menu M1
 lbl_m1 = tk.Label(
     frame_kiri,
     text='M1 - DATA PESANAN',
@@ -1317,7 +1298,7 @@ tk.Button(
     command=lambda: pilih_fitur('LL_HAPUS'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# KELOMPOK M2
+# Tombol Menu M2
 lbl_m2 = tk.Label(
     frame_kiri,
     text='M2 - STACK DAN QUEUE',
@@ -1382,7 +1363,7 @@ tk.Button(
     command=lambda: pilih_fitur('M2_DEQUEUE_CIRCULAR'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# KELOMPOK M3 (SORT DAN SEARCH)
+# Tombol Menu M3
 lbl_m3 = tk.Label(
     frame_kiri,
     text='M3 - SORT DAN SEARCH',
@@ -1401,7 +1382,6 @@ tk.Button(
     bd=1,
     command=lambda: pilih_fitur('SORT_INSERTION'),
 ).pack(fill=tk.X, padx=8, pady=1)
-
 tk.Button(
     frame_kiri,
     text='SORT - MERGE SORT',
@@ -1411,7 +1391,6 @@ tk.Button(
     bd=1,
     command=lambda: pilih_fitur('SORT_MERGE'),
 ).pack(fill=tk.X, padx=8, pady=1)
-
 tk.Button(
     frame_kiri,
     text='SEARCH - LINEAR SEARCH',
@@ -1421,7 +1400,6 @@ tk.Button(
     bd=1,
     command=lambda: pilih_fitur('SEARCH_LINEAR'),
 ).pack(fill=tk.X, padx=8, pady=1)
-
 tk.Button(
     frame_kiri,
     text='SEARCH - BINARY SEARCH',
@@ -1432,7 +1410,7 @@ tk.Button(
     command=lambda: pilih_fitur('SEARCH_BINARY'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# --- FRAME KANAN ---
+# Frame Kanan (Area Kerja Utama)
 frame_kanan = tk.Frame(frame_utama)
 frame_kanan.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
@@ -1453,7 +1431,7 @@ lbl_sub_fitur = tk.Label(
 )
 lbl_sub_fitur.pack(fill=tk.X, pady=(0, 5))
 
-# Form Input
+# Frame Form Input Utama
 frame_form = tk.Frame(frame_kanan, bd=1, relief=tk.SOLID)
 frame_form.pack(fill=tk.X, pady=5)
 
@@ -1482,12 +1460,12 @@ btn_eksekusi = tk.Button(
 )
 btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
 
-# Area Ringkasan Teks
+# Tampilan Output Ringkasan
 lbl_ringkasan = tk.Label(
     frame_kanan, text='', font=('Arial', 10), justify='left', anchor='w'
 )
 
-# Area Tabel Treeview
+# Tampilan Tabel Treeview
 frame_tabel = tk.Frame(frame_kanan)
 tree_hasil = ttk.Treeview(frame_tabel, show='headings')
 scroll_y = ttk.Scrollbar(
@@ -1502,11 +1480,11 @@ scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
 scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
 tree_hasil.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# Area Text Biasa
+# Area Teks Hasil Output
 text_hasil = tk.Text(frame_kanan, height=8)
 text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
 
-# Area Command Log
+# Terminal Log
 frame_log = tk.LabelFrame(frame_kanan, text='COMMAND LOG & WAKTU')
 frame_log.pack(fill=tk.X, side=tk.BOTTOM)
 
