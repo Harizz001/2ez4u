@@ -165,6 +165,8 @@ def pilih_fitur(kode_fitur):
   entry_index.grid_forget()
 
   # Reset posisi tombol ke kolom 2 (default untuk fitur lainnya)
+  entry_nama.config(width=35)
+  entry_index.config(width=15)
   btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
 
   # Reset Tampilan Output ke mode Teks biasa
@@ -379,22 +381,26 @@ def pilih_fitur(kode_fitur):
         lbl_judul_fitur.config(text="Sort: insertion sort, O(n²)")
         lbl_sub_fitur.config(text="Setiap elemen digeser mundur sampai menemukan tempatnya. Sederhana, tetapi kerjanya tumbuh kuadratik.")
         
+        # Perkecil lebar entry agar muat dalam 1 baris
+        entry_index.config(width=8)
+        entry_nama.config(width=12)
+        
         # Input 1: Jumlah Baris (Kolom 0 & 1)
-        lbl_index.config(text="Jumlah baris diurutkan:")
-        lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        entry_index.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        lbl_index.config(text="Jumlah baris:")
+        lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky="w")
+        entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky="w")
         entry_index.delete(0, tk.END)
         entry_index.insert(0, "10")
         
         # Input 2: Kunci Urut (Kolom 2 & 3)
-        lbl_nama.config(text="Diurutkan menurut:")
-        lbl_nama.grid(row=0, column=2, padx=5, pady=5, sticky="w")
-        entry_nama.grid(row=0, column=3, padx=5, pady=5, sticky="w")
+        lbl_nama.config(text="Urutkan menurut:")
+        lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky="w")
+        entry_nama.grid(row=0, column=3, padx=(0, 10), pady=5, sticky="w")
         entry_nama.delete(0, tk.END)
         entry_nama.insert(0, "harga")
         
-        # Pindahkan Tombol URUTKAN ke Kolom 4 agar tidak menimpa kolom 2
-        btn_eksekusi.grid(row=0, column=4, padx=15, pady=5)
+        # Tombol URUTKAN (Kolom 4)
+        btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
         btn_eksekusi.config(text="URUTKAN", bg="#0056b3", fg="white")
 
 def eksekusi_fitur():
