@@ -15,7 +15,12 @@ from backend.m2_antrean import (
     hitung_postfix,
     ke_postfix,
 )
-from backend.m3_laporan import insertion_sort, merge_sort
+from backend.m3_laporan import (
+    insertion_sort,
+    merge_sort,
+    linear_search,
+    binary_search,
+)
 
 # Global Variable M1
 data_array = Array()
@@ -429,6 +434,56 @@ def pilih_fitur(kode_fitur):
       # Tombol URUTKAN (Kolom 4)
       btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
       btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
+
+  elif kode_fitur == 'SEARCH_LINEAR':
+      lbl_judul_fitur.config(text='Search: linear search, O(n)')
+      lbl_sub_fitur.config(
+          text=(
+              'Mencari data dari awal sampai akhir satu per satu secara'
+              ' berurutan.'
+          )
+      )
+
+      entry_nama.config(width=20)
+
+      lbl_nama.config(text='Kata kunci:')
+      lbl_nama.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+      entry_nama.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+      entry_nama.delete(0, tk.END)
+      entry_nama.insert(0, 'kafe-teknik')
+
+      lbl_index.config(text='Cari di kolom:')
+      lbl_index.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+      combo_kunci.set('resto')
+
+      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+      btn_eksekusi.config(text='CARI', bg='#0056b3', fg='white')
+
+  elif kode_fitur == 'SEARCH_BINARY':
+      lbl_judul_fitur.config(text='Search: binary search, O(log n)')
+      lbl_sub_fitur.config(
+          text=(
+              'Membagi dua ruang pencarian secara berulang. Memerlukan data'
+              ' yang sudah terurut.'
+          )
+      )
+
+      entry_nama.config(width=20)
+
+      lbl_nama.config(text='Kata kunci:')
+      lbl_nama.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+      entry_nama.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+      entry_nama.delete(0, tk.END)
+      entry_nama.insert(0, 'kafe-teknik')
+
+      lbl_index.config(text='Cari di kolom:')
+      lbl_index.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+      combo_kunci.set('resto')
+
+      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+      btn_eksekusi.config(text='CARI', bg='#0056b3', fg='white')
 
 def eksekusi_fitur():
   global q_naif, q_circ, undo_stack, redo_stack
@@ -1029,6 +1084,67 @@ def eksekusi_fitur():
           f' {round(ms, 4)} ms'
       )
 
+  elif fitur_aktif == 'SEARCH_LINEAR':
+      target = entry_nama.get().strip()
+      kunci = combo_kunci.get().strip().lower()
+
+      if not target:
+        text_hasil.delete('1.0', tk.END)
+        text_hasil.insert(tk.END, 'Masukkan kata kunci pencarian!')
+        return
+
+      sampel_data = [data_array.get(i) for i in range(data_array.size)]
+
+      t1 = time.perf_counter()
+      hasil_search, perbandingan = linear_search(sampel_data, kunci, target)
+      t2 = time.perf_counter()
+      ms = (t2 - t1) * 1000
+
+      lbl_ringkasan.pack(fill=tk.X, pady=5)
+      text_ringkasan = (
+          f"Ditemukan {len(hasil_search):,} data cocok untuk '{target}' di"
+          f' kolom {kunci}.\nTotal perbandingan: {perbandingan:,} kali.'
+      )
+      lbl_ringkasan.config(text=text_ringkasan)
+
+      tampilkan_tabel_pesanan(hasil_search)
+      cetak_log(
+          f"M3 - Linear Search ('{target}' di {kunci}) -> {len(hasil_search)}"
+          f' hasil, Waktu: {round(ms, 4)} ms'
+      )
+
+  elif fitur_aktif == 'SEARCH_BINARY':
+      target = entry_nama.get().strip()
+      kunci = combo_kunci.get().strip().lower()
+
+      if not target:
+        text_hasil.delete('1.0', tk.END)
+        text_hasil.insert(tk.END, 'Masukkan kata kunci pencarian!')
+        return
+
+      sampel_data = [data_array.get(i) for i in range(data_array.size)]
+
+      t1 = time.perf_counter()
+      hasil_search, perbandingan, data_terurut = binary_search(
+          sampel_data, kunci, target
+      )
+      t2 = time.perf_counter()
+      ms = (t2 - t1) * 1000
+
+      lbl_ringkasan.pack(fill=tk.X, pady=5)
+      text_ringkasan = (
+          f"Ditemukan {len(hasil_search):,} data cocok untuk '{target}' di"
+          f' kolom {kunci} (Data diurutkan otomatis terlebih'
+          f' dahulu).\nTotal perbandingan: {perbandingan:,} kali.'
+      )
+      lbl_ringkasan.config(text=text_ringkasan)
+
+      tampilkan_tabel_pesanan(hasil_search)
+      cetak_log(
+          f"M3 - Binary Search ('{target}' di {kunci}) -> {len(hasil_search)}"
+          f' hasil, Waktu: {round(ms, 4)} ms'
+      )
+
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
 root.title('2EZ4U Food Delivery')
@@ -1266,19 +1382,26 @@ tk.Button(
     command=lambda: pilih_fitur('M2_DEQUEUE_CIRCULAR'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# KELOMPOK M3
-lbl_m3 = tk.Label(frame_kiri, text="M3 - SORT DAN SEARCH", font=("Arial", 8, "bold"), fg="#555555", anchor="w")
+# KELOMPOK M3 (SORT DAN SEARCH)
+lbl_m3 = tk.Label(
+    frame_kiri,
+    text='M3 - SORT DAN SEARCH',
+    font=('Arial', 8, 'bold'),
+    fg='#555555',
+    anchor='w',
+)
 lbl_m3.pack(fill=tk.X, padx=8, pady=(12, 2))
 
 tk.Button(
-    frame_kiri, 
-    text="SORT - INSERTION SORT", 
-    anchor="w", 
-    font=("Arial", 9), 
-    bg="#f8f9fa", 
+    frame_kiri,
+    text='SORT - INSERTION SORT',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
     bd=1,
-    command=lambda: pilih_fitur('SORT_INSERTION')
+    command=lambda: pilih_fitur('SORT_INSERTION'),
 ).pack(fill=tk.X, padx=8, pady=1)
+
 tk.Button(
     frame_kiri,
     text='SORT - MERGE SORT',
@@ -1287,6 +1410,26 @@ tk.Button(
     bg='#f8f9fa',
     bd=1,
     command=lambda: pilih_fitur('SORT_MERGE'),
+).pack(fill=tk.X, padx=8, pady=1)
+
+tk.Button(
+    frame_kiri,
+    text='SEARCH - LINEAR SEARCH',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('SEARCH_LINEAR'),
+).pack(fill=tk.X, padx=8, pady=1)
+
+tk.Button(
+    frame_kiri,
+    text='SEARCH - BINARY SEARCH',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('SEARCH_BINARY'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
 # --- FRAME KANAN ---

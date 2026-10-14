@@ -34,9 +34,10 @@
 - Fix error dimana data tidak mau load
 - Mengerjakan seluruh bagian queue (M2)
 - Finishing UI dari M2
-- Mengerjakan insertion search (M3)
+- Mengerjakan insertion sort (M3)
 - Menambahkan fitur scroll di frame kiri
-- Fix error dimana button eksekusi di bagian insertion search saling timpa menimpa
-- Menambahkan fitur drop-down pada input "urutkan menurut" di insertion search
+- Fix error dimana button eksekusi di bagian insertion sort saling timpa menimpa
+- Menambahkan fitur drop-down pada input "urutkan menurut" di insertion sort
 - Menambah opsi drop-down agar mencakup seluruh judul tabel
 - Mengerjakan merge sort (M3)
+- Mengerjakan linear search dan (M3)
