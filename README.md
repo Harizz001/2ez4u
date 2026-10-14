@@ -37,3 +37,4 @@
 - Mengerjakan insertion search (M3)
 - Menambahkan fitur scroll di frame kiri
 - Fix error dimana button eksekusi di bagian insertion search saling timpa menimpa
+- Menambahkan fitur drop-down pada input "urutkan menurut" di insertion search

@@ -27,9 +27,6 @@ q_circ = AntreanMelingkar()
 undo_stack = Stack()
 redo_stack = Stack()
 
-# Global Variable M3
-
-
 id_baru = 200001
 fitur_aktif = 'ARR_LIHAT_INDEKS'
 
@@ -163,6 +160,7 @@ def pilih_fitur(kode_fitur):
   entry_nama.grid_forget()
   lbl_index.grid_forget()
   entry_index.grid_forget()
+  combo_kunci.grid_forget()
 
   # Reset posisi tombol ke kolom 2 (default untuk fitur lainnya)
   entry_nama.config(width=35)
@@ -378,30 +376,32 @@ def pilih_fitur(kode_fitur):
 
   # --- M3 FITUR ---
   elif kode_fitur == 'SORT_INSERTION':
-        lbl_judul_fitur.config(text="Sort: insertion sort, O(n²)")
-        lbl_sub_fitur.config(text="Setiap elemen digeser mundur sampai menemukan tempatnya. Sederhana, tetapi kerjanya tumbuh kuadratik.")
-        
-        # Perkecil lebar entry agar muat dalam 1 baris
-        entry_index.config(width=8)
-        entry_nama.config(width=12)
-        
-        # Input 1: Jumlah Baris (Kolom 0 & 1)
-        lbl_index.config(text="Jumlah baris:")
-        lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky="w")
-        entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky="w")
-        entry_index.delete(0, tk.END)
-        entry_index.insert(0, "10")
-        
-        # Input 2: Kunci Urut (Kolom 2 & 3)
-        lbl_nama.config(text="Urutkan menurut:")
-        lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky="w")
-        entry_nama.grid(row=0, column=3, padx=(0, 10), pady=5, sticky="w")
-        entry_nama.delete(0, tk.END)
-        entry_nama.insert(0, "harga")
-        
-        # Tombol URUTKAN (Kolom 4)
-        btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
-        btn_eksekusi.config(text="URUTKAN", bg="#0056b3", fg="white")
+      lbl_judul_fitur.config(text='Sort: insertion sort, O(n²)')
+      lbl_sub_fitur.config(
+          text=(
+              'Setiap elemen digeser mundur sampai menemukan tempatnya.'
+              ' Sederhana, tetapi kerjanya tumbuh kuadratik.'
+          )
+      )
+
+      # Perkecil lebar entry jumlah baris
+      entry_index.config(width=8)
+
+      # Input 1: Jumlah Baris (Kolom 0 & 1)
+      lbl_index.config(text='Jumlah baris:')
+      lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+      entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+      entry_index.delete(0, tk.END)
+      entry_index.insert(0, '10')
+
+      # Input 2: Kunci Urut pakai Dropdown/Combobox (Kolom 2 & 3)
+      lbl_nama.config(text='Urutkan menurut:')
+      lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+
+      # Tombol URUTKAN (Kolom 4)
+      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+      btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
 
 def eksekusi_fitur():
   global q_naif, q_circ, undo_stack, redo_stack
@@ -460,10 +460,10 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-        tk.END,
-        'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
-        f'{p.oid} - {p.pelanggan}',
-    )
+    tk.END,
+    'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
+    f'{p.oid} - {p.pelanggan}',
+)
     cetak_log(
         f'ARRAY - Tambah Reguler ({p.oid}) di belakang -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -499,9 +499,9 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-        tk.END,
-        f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
-    )
+    tk.END,
+    f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
+)
     cetak_log(
         f'ARRAY - Tambah VIP ({p.oid}) di depan (0) -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -522,9 +522,9 @@ def eksekusi_fitur():
     text_hasil.delete('1.0', tk.END)
     if p != None:
       text_hasil.insert(
-          tk.END,
-          f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
-      )
+    tk.END,
+    f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
+)
       cetak_log(
           f'ARRAY - Hapus index {idx} ({p.oid}) -> Waktu: {round(ms, 4)} ms'
       )
@@ -584,10 +584,10 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-        tk.END,
-        'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
-        f'{p.oid} - {p.pelanggan}',
-    )
+    tk.END,
+    'Berhasil menambahkan pesanan REGULER di posisi paling belakang:\n'
+    f'{p.oid} - {p.pelanggan}',
+)
     cetak_log(
         f'LINKEDLIST - Tambah Reguler ({p.oid}) di belakang -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -623,9 +623,9 @@ def eksekusi_fitur():
     ms = (t2 - t1) * 1000
     text_hasil.delete('1.0', tk.END)
     text_hasil.insert(
-        tk.END,
-        f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
-    )
+    tk.END,
+    f'Berhasil menambahkan pesanan VIP di indeks 0:\n{p.oid} - {p.pelanggan}',
+)
     cetak_log(
         f'LINKEDLIST - Tambah VIP ({p.oid}) di depan (0) -> Waktu:'
         f' {round(ms, 4)} ms'
@@ -646,9 +646,9 @@ def eksekusi_fitur():
     text_hasil.delete('1.0', tk.END)
     if p != None:
       text_hasil.insert(
-          tk.END,
-          f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
-      )
+    tk.END,
+    f'Berhasil menghapus pesanan di indeks {idx}:\n{p.oid} - {p.pelanggan}',
+)
       cetak_log(
           f'LINKEDLIST - Hapus index {idx} ({p.oid}) -> Waktu: {round(ms, 4)} ms'
       )
@@ -927,36 +927,45 @@ def eksekusi_fitur():
     cetak_log(f'M2 - Stack Redo -> Waktu: {round(ms, 4)} ms')
 
   elif fitur_aktif == 'SORT_INSERTION':
-        try:
-            limit = int(entry_index.get())
-        except:
-            limit = 10
-            
-        kunci = entry_nama.get().strip().lower()
-        if kunci not in ['harga', 'oid', 'selesai']:
-            kunci = 'harga'
+      try:
+        limit = int(entry_index.get())
+      except:
+        limit = 10
 
-        # Batasi maksimal 20.000 baris agar UI tidak freeze (karakteristik O(n²))
-        if limit > 20000:
-            text_hasil.delete("1.0", tk.END)
-            text_hasil.insert(tk.END, "DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk menghindari freeze!")
-            return
+      # Ambil nilai langsung dari Combobox
+      kunci = combo_kunci.get().strip().lower()
 
-        # Ambil sampel N data dari data_array M1
-        n_data = min(limit, data_array.size)
-        sampel_data = [data_array.get(i) for i in range(n_data)]
+      if limit > 20000:
+        text_hasil.delete('1.0', tk.END)
+        text_hasil.insert(
+            tk.END,
+            'DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk'
+            ' menghindari freeze!',
+        )
+        return
 
-        t1 = time.perf_counter()
-        hasil_sort, perbandingan, pemindahan = insertion_sort(sampel_data, kunci)
-        t2 = time.perf_counter()
-        ms = (t2 - t1) * 1000
+      n_data = min(limit, data_array.size)
+      sampel_data = [data_array.get(i) for i in range(n_data)]
 
-        lbl_ringkasan.pack(fill=tk.X, pady=5)
-        text_ringkasan = f"{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,} perbandingan, {pemindahan:,} pemindahan."
-        lbl_ringkasan.config(text=text_ringkasan)
+      t1 = time.perf_counter()
+      hasil_sort, perbandingan, pemindahan = insertion_sort(
+          sampel_data, kunci
+      )
+      t2 = time.perf_counter()
+      ms = (t2 - t1) * 1000
 
-        tampilkan_tabel_pesanan(hasil_sort)
-        cetak_log(f"M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu: {round(ms, 4)} ms")
+      lbl_ringkasan.pack(fill=tk.X, pady=5)
+      text_ringkasan = (
+          f'{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,}'
+          f' perbandingan, {pemindahan:,} pemindahan.'
+      )
+      lbl_ringkasan.config(text=text_ringkasan)
+
+      tampilkan_tabel_pesanan(hasil_sort)
+      cetak_log(
+          f'M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
+          f' {round(ms, 4)} ms'
+      )
 
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
@@ -1009,6 +1018,7 @@ def _on_mousewheel(event):
     canvas_kiri.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
 canvas_kiri.bind_all("<MouseWheel>", _on_mousewheel)
+
 # KELOMPOK M1
 lbl_m1 = tk.Label(
     frame_kiri,
@@ -1240,6 +1250,14 @@ entry_nama.insert(0, 'Pelanggan Baru')
 lbl_index = tk.Label(frame_form, text='Indeks ke-i:')
 entry_index = tk.Entry(frame_form, width=15)
 entry_index.insert(0, '0')
+
+combo_kunci = ttk.Combobox(
+    frame_form,
+    values=['harga', 'oid', 'selesai'],
+    state='readonly',
+    width=10,
+)
+combo_kunci.set('harga')
 
 btn_eksekusi = tk.Button(
     frame_form,
