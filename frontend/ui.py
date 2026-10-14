@@ -927,45 +927,48 @@ def eksekusi_fitur():
     cetak_log(f'M2 - Stack Redo -> Waktu: {round(ms, 4)} ms')
 
   elif fitur_aktif == 'SORT_INSERTION':
-      try:
-        limit = int(entry_index.get())
-      except:
-        limit = 10
+        try:
+            limit = int(entry_index.get())
+        except:
+            limit = 10
 
-      # Ambil nilai langsung dari Combobox
-      kunci = combo_kunci.get().strip().lower()
+        # Ambil nilai kunci langsung dari Combobox
+        kunci = combo_kunci.get().strip().lower()
+        opsi_valid = ['oid', 'pelanggan', 'resto', 'menu', 'harga', 'status']
+        if kunci not in opsi_valid:
+            kunci = 'harga'
 
-      if limit > 20000:
-        text_hasil.delete('1.0', tk.END)
-        text_hasil.insert(
-            tk.END,
-            'DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk'
-            ' menghindari freeze!',
+        if limit > 20000:
+            text_hasil.delete('1.0', tk.END)
+            text_hasil.insert(
+                tk.END,
+                'DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk'
+                ' menghindari freeze!',
+            )
+            return
+
+        n_data = min(limit, data_array.size)
+        sampel_data = [data_array.get(i) for i in range(n_data)]
+
+        t1 = time.perf_counter()
+        hasil_sort, perbandingan, pemindahan = insertion_sort(
+            sampel_data, kunci
         )
-        return
+        t2 = time.perf_counter()
+        ms = (t2 - t1) * 1000
 
-      n_data = min(limit, data_array.size)
-      sampel_data = [data_array.get(i) for i in range(n_data)]
+        lbl_ringkasan.pack(fill=tk.X, pady=5)
+        text_ringkasan = (
+            f'{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,}'
+            f' perbandingan, {pemindahan:,} pemindahan.'
+        )
+        lbl_ringkasan.config(text=text_ringkasan)
 
-      t1 = time.perf_counter()
-      hasil_sort, perbandingan, pemindahan = insertion_sort(
-          sampel_data, kunci
-      )
-      t2 = time.perf_counter()
-      ms = (t2 - t1) * 1000
-
-      lbl_ringkasan.pack(fill=tk.X, pady=5)
-      text_ringkasan = (
-          f'{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,}'
-          f' perbandingan, {pemindahan:,} pemindahan.'
-      )
-      lbl_ringkasan.config(text=text_ringkasan)
-
-      tampilkan_tabel_pesanan(hasil_sort)
-      cetak_log(
-          f'M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
-          f' {round(ms, 4)} ms'
-      )
+        tampilkan_tabel_pesanan(hasil_sort)
+        cetak_log(
+            f'M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
+            f' {round(ms, 4)} ms'
+        )
 
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
@@ -1253,9 +1256,9 @@ entry_index.insert(0, '0')
 
 combo_kunci = ttk.Combobox(
     frame_form,
-    values=['harga', 'oid', 'selesai'],
+    values=['oid', 'pelanggan', 'resto', 'menu', 'harga', 'status'],
     state='readonly',
-    width=10,
+    width=12,
 )
 combo_kunci.set('harga')
 

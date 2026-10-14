@@ -1,11 +1,10 @@
 def get_kunci_val(pesanan, kunci):
-    if kunci == 'harga':
-        return int(pesanan.harga)
-    elif kunci == 'oid':
-        return pesanan.oid
-    elif kunci == 'selesai':
-        return pesanan.selesai
-    return pesanan.oid
+    if kunci in ['harga', 'prioritas']:
+        return int(getattr(pesanan, kunci, 0))
+    
+    # Untuk kolom berbasis teks (oid, pelanggan, resto, menu, status)
+    val = str(getattr(pesanan, kunci, ''))
+    return val.lower()
 
 def insertion_sort(arr_input, kunci='harga'):
     # Buat salinan data agar data asli di Array/LinkedList M1 tidak rusak
