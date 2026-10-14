@@ -33,3 +33,6 @@
 - Mengerjakan Undo dan Redo (M2)
 - Fix error dimana data tidak mau load
 - Mengerjakan seluruh bagian queue (M2)
+- Finishing UI dari M2
+- Mengerjakan insertion search (M3)
+- Menambahkan fitur scroll di frame kiri

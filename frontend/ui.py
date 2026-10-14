@@ -15,6 +15,7 @@ from backend.m2_antrean import (
     hitung_postfix,
     ke_postfix,
 )
+from backend.m3_laporan import insertion_sort
 
 # Global Variable M1
 data_array = Array()
@@ -25,6 +26,9 @@ q_naif = AntreanNaif()
 q_circ = AntreanMelingkar()
 undo_stack = Stack()
 redo_stack = Stack()
+
+# Global Variable M3
+
 
 id_baru = 200001
 fitur_aktif = 'ARR_LIHAT_INDEKS'
@@ -367,6 +371,23 @@ def pilih_fitur(kode_fitur):
     entry_index.insert(0, '1')
     btn_eksekusi.config(text='DEQUEUE', bg='#0056b3', fg='white')
 
+  elif kode_fitur == 'SORT_INSERTION':
+        lbl_judul_fitur.config(text="Sort: insertion sort, O(n²)")
+        lbl_sub_fitur.config(text="Setiap elemen digeser mundur sampai menemukan tempatnya. Sederhana, tetapi kerjanya tumbuh kuadratik.")
+        
+        lbl_index.config(text="Jumlah baris diurutkan:")
+        lbl_index.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        entry_index.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        entry_index.delete(0, tk.END)
+        entry_index.insert(0, "10") # Default 10 baris
+        
+        lbl_nama.config(text="Diurutkan menurut:")
+        lbl_nama.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        entry_nama.grid(row=0, column=3, padx=5, pady=5, sticky="w")
+        entry_nama.delete(0, tk.END)
+        entry_nama.insert(0, "harga") # Pilihan: harga, oid, atau selesai
+        
+        btn_eksekusi.config(text="URUTKAN", bg="#0056b3", fg="white")
 
 def eksekusi_fitur():
   global q_naif, q_circ, undo_stack, redo_stack
@@ -891,6 +912,37 @@ def eksekusi_fitur():
     )
     cetak_log(f'M2 - Stack Redo -> Waktu: {round(ms, 4)} ms')
 
+  elif fitur_aktif == 'SORT_INSERTION':
+        try:
+            limit = int(entry_index.get())
+        except:
+            limit = 10
+            
+        kunci = entry_nama.get().strip().lower()
+        if kunci not in ['harga', 'oid', 'selesai']:
+            kunci = 'harga'
+
+        # Batasi maksimal 20.000 baris agar UI tidak freeze (karakteristik O(n²))
+        if limit > 20000:
+            text_hasil.delete("1.0", tk.END)
+            text_hasil.insert(tk.END, "DITOLAK: Batas maksimal Insertion Sort adalah 20.000 baris untuk menghindari freeze!")
+            return
+
+        # Ambil sampel N data dari data_array M1
+        n_data = min(limit, data_array.size)
+        sampel_data = [data_array.get(i) for i in range(n_data)]
+
+        t1 = time.perf_counter()
+        hasil_sort, perbandingan, pemindahan = insertion_sort(sampel_data, kunci)
+        t2 = time.perf_counter()
+        ms = (t2 - t1) * 1000
+
+        lbl_ringkasan.pack(fill=tk.X, pady=5)
+        text_ringkasan = f"{n_data} pesanan diurutkan menurut {kunci}.\n{perbandingan:,} perbandingan, {pemindahan:,} pemindahan."
+        lbl_ringkasan.config(text=text_ringkasan)
+
+        tampilkan_tabel_pesanan(hasil_sort)
+        cetak_log(f"M3 - Insertion Sort ({n_data} data, kunci: {kunci}) -> Waktu: {round(ms, 4)} ms")
 
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
@@ -1104,6 +1156,19 @@ tk.Button(
     command=lambda: pilih_fitur('M2_DEQUEUE_CIRCULAR'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
+# KELOMPOK M3 (SORT - INSERTION SORT)
+lbl_m3 = tk.Label(frame_kiri, text="M3 - SORT DAN SEARCH", font=("Arial", 8, "bold"), fg="#555555", anchor="w")
+lbl_m3.pack(fill=tk.X, padx=8, pady=(12, 2))
+
+tk.Button(
+    frame_kiri, 
+    text="SORT - INSERTION SORT", 
+    anchor="w", 
+    font=("Arial", 9), 
+    bg="#f8f9fa", 
+    bd=1,
+    command=lambda: pilih_fitur('SORT_INSERTION')
+).pack(fill=tk.X, padx=8, pady=1)
 
 # --- FRAME KANAN ---
 frame_kanan = tk.Frame(frame_utama)
