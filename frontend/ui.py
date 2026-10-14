@@ -5,10 +5,10 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-# Import Backend M1 & M2
+# Import Backend M1 & M2 (Khusus Langkah 1: Stack & Postfix)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.m1_pesanan import Array, LinkList, Pesanan
-from backend.m2_antrean import ke_postfix, hitung_postfix
+from backend.m2_antrean import hitung_postfix, ke_postfix
 
 # Global Variable M1
 data_array = Array()
@@ -24,13 +24,9 @@ def cetak_log(pesan):
 
 
 def tombol_load_csv():
-  global data_array, data_ll, q_naif, q_circ, undo_stack, redo_stack
+  global data_array, data_ll
   data_array = Array()
   data_ll = LinkList()
-  q_naif = AntreanNaif()
-  q_circ = AntreanMelingkar()
-  undo_stack = Stack()
-  redo_stack = Stack()
 
   path_file = 'data/pesanan.csv'
   if not os.path.exists(path_file):
@@ -60,21 +56,13 @@ def tombol_load_csv():
     )
     data_array.append(p)
     data_ll.append(p)
-
-    # Masukkan otomatis pesanan berstatus ANTRE ke dalam dua antrean
-    if p.status == 'ANTRE':
-      q_naif.enqueue(p)
-      q_circ.enqueue(p)
-
     count += 1
 
   f.close()
   t2 = time.perf_counter()
   ms = (t2 - t1) * 1000
 
-  label_status.config(
-      text=f'Status: {count} data dimuat | Antrean ANTRE: {q_circ.size()}'
-  )
+  label_status.config(text=f'Status: {count} data dimuat')
   cetak_log(f'Load CSV Selesai ({count} data) -> Waktu: {round(ms, 2)} ms')
 
 
@@ -100,10 +88,22 @@ def pilih_fitur(kode_fitur):
   global fitur_aktif
   fitur_aktif = kode_fitur
 
+  # Sembunyikan elemen form
   lbl_nama.grid_forget()
   entry_nama.grid_forget()
   lbl_index.grid_forget()
   entry_index.grid_forget()
+
+  # Reset Tampilan Output ke mode Teks biasa (default M1)
+  lbl_ringkasan.config(text='')
+  lbl_ringkasan.pack_forget()
+  frame_tabel.pack_forget()
+  text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
+
+  # Helper untuk reset input nama pelanggan
+  def reset_nama_pelanggan():
+    entry_nama.delete(0, tk.END)
+    entry_nama.insert(0, 'Pelanggan Baru')
 
   # --- M1 FITUR ---
   if kode_fitur == 'ARR_LIHAT_INDEKS':
@@ -129,8 +129,10 @@ def pilih_fitur(kode_fitur):
     lbl_sub_fitur.config(
         text='append: pesanan biasa, mengantre di barisan paling belakang'
     )
+    lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
     btn_eksekusi.config(text='TAMBAH', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'ARR_TAMBAH_PRIORITAS':
@@ -138,8 +140,10 @@ def pilih_fitur(kode_fitur):
         text='Array: pesanan PRIORITAS, menyerobot ke tengah'
     )
     lbl_sub_fitur.config(text='insert: disisipkan tepat di pertengahan barisan')
+    lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
     btn_eksekusi.config(text='TAMBAH', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'ARR_TAMBAH_VIP':
@@ -147,8 +151,10 @@ def pilih_fitur(kode_fitur):
         text='Array: pesanan VIP, langsung ke urutan pertama'
     )
     lbl_sub_fitur.config(text='insert: disisipkan paling depan (indeks 0)')
+    lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
     btn_eksekusi.config(text='TAMBAH', bg='#0056b3', fg='white')
 
   elif kode_fitur == 'ARR_HAPUS':
@@ -188,8 +194,10 @@ def pilih_fitur(kode_fitur):
         text='LinkedList: pesanan REGULER, masuk paling belakang'
     )
     lbl_sub_fitur.config(text='append: langsung disambung via tail pointer')
+    lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
     btn_eksekusi.config(text='TAMBAH', bg='#27ae60', fg='white')
 
   elif kode_fitur == 'LL_TAMBAH_PRIORITAS':
@@ -199,8 +207,10 @@ def pilih_fitur(kode_fitur):
     lbl_sub_fitur.config(
         text='insert: menelusuri hingga pertengahan lalu menyambung pointer'
     )
+    lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
     btn_eksekusi.config(text='TAMBAH', bg='#27ae60', fg='white')
 
   elif kode_fitur == 'LL_TAMBAH_VIP':
@@ -208,8 +218,10 @@ def pilih_fitur(kode_fitur):
         text='LinkedList: pesanan VIP, langsung ke urutan pertama'
     )
     lbl_sub_fitur.config(text='insert: langsung mengubah penunjuk head')
+    lbl_nama.config(text='Nama pelanggan:')
     lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
     entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    reset_nama_pelanggan()  # <-- Reset ke Pelanggan Baru
     btn_eksekusi.config(text='TAMBAH', bg='#27ae60', fg='white')
 
   elif kode_fitur == 'LL_HAPUS':
@@ -222,23 +234,23 @@ def pilih_fitur(kode_fitur):
     entry_index.grid(row=0, column=1, padx=5, pady=5, sticky='w')
     btn_eksekusi.config(text='HAPUS', bg='#c0392b', fg='white')
 
-  # --- M2 FITUR ---
-  elif kode_fitur == "M2_POSTFIX":
-        lbl_judul_fitur.config(text="Stack: hitung struk lewat postfix")
-        lbl_sub_fitur.config(
-            text="Struk ditulis infix, lalu dihitung dua tahap dengan stack (Infix -> Postfix -> Evaluasi)"
+  # --- M2 FITUR: LANGKAH 1 ---
+  elif kode_fitur == 'M2_POSTFIX':
+    lbl_judul_fitur.config(text='Stack: hitung struk lewat postfix')
+    lbl_sub_fitur.config(
+        text=(
+            'Struk ditulis infix, lalu dihitung dua tahap dengan stack: tahap'
+            ' 1 infix menjadi postfix, tahap 2 postfix dievaluasi.'
         )
-        lbl_nama.config(text="Struk belanja (infix):")
-        lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        entry_nama.delete(0, tk.END)
-        entry_nama.insert(0, "(3*12000)+(2*8500)-5000")
-        btn_eksekusi.config(text="HITUNG", bg="#0056b3", fg="white")
-
+    )
+    lbl_nama.config(text='Struk belanja (infix):')
+    lbl_nama.grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    entry_nama.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    entry_nama.delete(0, tk.END)
+    entry_nama.insert(0, '( 3 * 12000 ) + ( 2 * 8500 ) - 5000')
+    btn_eksekusi.config(text='HITUNG', bg='#0056b3', fg='white')
 
 def eksekusi_fitur():
-  global q_naif, q_circ, undo_stack, redo_stack
-
   # --- EKSEKUSI M1 ---
   if fitur_aktif == 'ARR_LIHAT_INDEKS':
     try:
@@ -470,60 +482,62 @@ def eksekusi_fitur():
     else:
       text_hasil.insert(tk.END, 'Gagal menghapus, indeks tidak valid!')
 
-  elif fitur_aktif == "M2_POSTFIX":
-        expr = entry_nama.get().strip()
-        t1 = time.perf_counter()
-        postfix_tokens, log_1 = ke_postfix(expr)
-        total, log_2 = hitung_postfix(postfix_tokens)
-        t2 = time.perf_counter()
-        ms = (t2 - t1) * 1000
+  # --- EKSEKUSI M2: STACK POSTFIX ---
+  elif fitur_aktif == 'M2_POSTFIX':
+    expr = entry_nama.get().strip()
+    t1 = time.perf_counter()
+    postfix_tokens, log_1 = ke_postfix(expr)
+    total, log_2 = hitung_postfix(postfix_tokens)
+    t2 = time.perf_counter()
+    ms = (t2 - t1) * 1000
 
-        # 1. Tampilkan Ringkasan Teks Atas
-        text_ringkasan = (
-            f"Struk : {expr}\n"
-            f"Postfix: {' '.join(postfix_tokens)}\n"
-            f"TOTAL : Rp {total:,}"
-        )
-        lbl_ringkasan.config(text=text_ringkasan)
+    # Switch Tampilan Ke Ringkasan & Tabel Treeview Berkolom
+    text_hasil.pack_forget()
+    lbl_ringkasan.pack(fill=tk.X, pady=5)
+    frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
 
-        # 2. Sembunyikan Text biasa & Tampilkan Tabel Treeview
-        text_hasil.pack_forget()
-        frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
+    text_ringkasan = (
+        f'Struk : {expr}\nPostfix: {" ".join(postfix_tokens)}\nTOTAL : Rp'
+        f' {total:,}'
+    )
+    lbl_ringkasan.config(text=text_ringkasan)
 
-        # 3. Konfigurasi Kolom Tabel
-        kolom = ("langkah", "token", "tindakan", "stack", "output")
-        tree_hasil["columns"] = kolom
+    kolom = ('langkah', 'token', 'tindakan', 'stack', 'output')
+    tree_hasil['columns'] = kolom
 
-        tree_hasil.heading("langkah", text="langkah", anchor="w")
-        tree_hasil.heading("token", text="token", anchor="w")
-        tree_hasil.heading("tindakan", text="tindakan", anchor="w")
-        tree_hasil.heading("stack", text="stack", anchor="w")
-        tree_hasil.heading("output", text="output", anchor="w")
+    tree_hasil.heading('langkah', text='langkah', anchor='w')
+    tree_hasil.heading('token', text='token', anchor='w')
+    tree_hasil.heading('tindakan', text='tindakan', anchor='w')
+    tree_hasil.heading('stack', text='stack', anchor='w')
+    tree_hasil.heading('output', text='output', anchor='w')
 
-        tree_hasil.column("langkah", width=70, minwidth=60)
-        tree_hasil.column("token", width=60, minwidth=50)
-        tree_hasil.column("tindakan", width=280, minwidth=200)
-        tree_hasil.column("stack", width=120, minwidth=100)
-        tree_hasil.column("output", width=200, minwidth=150)
+    tree_hasil.column('langkah', width=70, minwidth=60)
+    tree_hasil.column('token', width=60, minwidth=50)
+    tree_hasil.column('tindakan', width=280, minwidth=200)
+    tree_hasil.column('stack', width=120, minwidth=100)
+    tree_hasil.column('output', width=200, minwidth=150)
 
-        # 4. Bersihkan data tabel lama
-        for item in tree_hasil.get_children():
-            tree_hasil.delete(item)
+    for item in tree_hasil.get_children():
+      tree_hasil.delete(item)
 
-        # 5. Isi Tahap 1: Konversi Infix ke Postfix (1.1, 1.2, dst)
-        idx = 1
-        for tkn, tin, stk, out in log_1:
-            lbl_step = f"1.{idx}" if idx != len(log_1) else "1.akhir"
-            tree_hasil.insert("", tk.END, values=(lbl_step, tkn, tin, stk, out))
-            idx += 1
+    # Fill Tahap 1: Infix to Postfix
+    idx = 1
+    for tkn, tin, stk, out in log_1:
+      lbl_step = f'1.{idx}' if idx != len(log_1) else '1.akhir'
+      tree_hasil.insert('', tk.END, values=(lbl_step, tkn, tin, stk, out))
+      idx += 1
 
-        # 6. Isi Tahap 2: Evaluasi Postfix (2.1, 2.2, dst)
-        idx_eval = 1
-        for tkn, tin, stk in log_2:
-            tree_hasil.insert("", tk.END, values=(f"2.{idx_eval}", tkn, tin, stk, stk))
-            idx_eval += 1
+    # Fill Tahap 2: Evaluasi Postfix
+    idx_eval = 1
+    for tkn, tin, stk in log_2:
+      tree_hasil.insert(
+          '', tk.END, values=(f'2.{idx_eval}', tkn, tin, stk, stk)
+      )
+      idx_eval += 1
 
-        cetak_log(f"M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms")
+    cetak_log(f'M2 - Stack Postfix (Mesin Kasir) -> Waktu: {round(ms, 4)} ms')
+
+
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
 root.title('2EZ4U Food Delivery')
@@ -547,10 +561,11 @@ label_status.pack(side=tk.LEFT, padx=10)
 frame_utama = tk.Frame(root)
 frame_utama.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+# --- FRAME KIRI (SIDEBAR MENU) ---
 frame_kiri = tk.Frame(frame_utama, width=260, bd=1, relief=tk.SOLID)
 frame_kiri.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
 
-# --- KELOMPOK M1 ---
+# KELOMPOK M1
 lbl_m1 = tk.Label(
     frame_kiri,
     text='M1 - DATA PESANAN',
@@ -670,21 +685,28 @@ tk.Button(
     command=lambda: pilih_fitur('LL_HAPUS'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# --- KELOMPOK M2: STACK ---
-lbl_m2 = tk.Label(frame_kiri, text="M2 - STACK DAN QUEUE", font=("Arial", 8, "bold"), fg="#555555", anchor="w")
+# KELOMPOK M2 (Hanya Stack Postfix untuk Langkah 1)
+lbl_m2 = tk.Label(
+    frame_kiri,
+    text='M2 - STACK DAN QUEUE',
+    font=('Arial', 8, 'bold'),
+    fg='#555555',
+    anchor='w',
+)
 lbl_m2.pack(fill=tk.X, padx=8, pady=(12, 2))
 
 tk.Button(
     frame_kiri,
-    text="STACK - POSTFIX (MESIN KASIR)",
-    anchor="w",
-    font=("Arial", 9),
-    bg="#f8f9fa",
+    text='STACK - POSTFIX (MESIN KASIR)',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
     bd=1,
-    command=lambda: pilih_fitur("M2_POSTFIX")
+    command=lambda: pilih_fitur('M2_POSTFIX'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# Frame Kanan
+
+# --- FRAME KANAN (DEKLARASI TUNGGAL) ---
 frame_kanan = tk.Frame(frame_utama)
 frame_kanan.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
@@ -705,11 +727,12 @@ lbl_sub_fitur = tk.Label(
 )
 lbl_sub_fitur.pack(fill=tk.X, pady=(0, 5))
 
+# Form Input
 frame_form = tk.Frame(frame_kanan, bd=1, relief=tk.SOLID)
 frame_form.pack(fill=tk.X, pady=5)
 
 lbl_nama = tk.Label(frame_form, text='Nama pelanggan:')
-entry_nama = tk.Entry(frame_form, width=30)
+entry_nama = tk.Entry(frame_form, width=35)
 entry_nama.insert(0, 'Pelanggan Baru')
 
 lbl_index = tk.Label(frame_form, text='Indeks ke-i:')
@@ -725,55 +748,37 @@ btn_eksekusi = tk.Button(
 )
 btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
 
-# --- FRAME KANAN (HASIL & TABEL) ---
-frame_kanan = tk.Frame(frame_utama)
-frame_kanan.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+# Area Ringkasan Teks (khusus Postfix)
+lbl_ringkasan = tk.Label(
+    frame_kanan, text='', font=('Arial', 10), justify='left', anchor='w'
+)
 
-lbl_judul_fitur = tk.Label(frame_kanan, text="Stack: hitung struk lewat postfix", font=("Arial", 11, "bold"), anchor="w")
-lbl_judul_fitur.pack(fill=tk.X, pady=(5, 0))
-
-lbl_sub_fitur = tk.Label(frame_kanan, text="Struk ditulis infix, lalu dihitung dua tahap dengan stack", font=("Arial", 9, "italic"), fg="gray", anchor="w")
-lbl_sub_fitur.pack(fill=tk.X, pady=(0, 5))
-
-# Form Input
-frame_form = tk.Frame(frame_kanan, bd=1, relief=tk.SOLID)
-frame_form.pack(fill=tk.X, pady=5)
-
-lbl_nama = tk.Label(frame_form, text="Struk belanja (infix):")
-entry_nama = tk.Entry(frame_form, width=35)
-entry_nama.insert(0, "( 3 * 12000 ) + ( 2 * 8500 ) - 5000")
-
-lbl_index = tk.Label(frame_form, text="Indeks ke-i:")
-entry_index = tk.Entry(frame_form, width=15)
-entry_index.insert(0, "0")
-
-btn_eksekusi = tk.Button(frame_form, text="HITUNG", font=("Arial", 9, "bold"), width=12, command=lambda: eksekusi_fitur())
-btn_eksekusi.grid(row=0, column=2, padx=15, pady=5)
-
-# --- AREA RINGKASAN TEKS ---
-lbl_ringkasan = tk.Label(frame_kanan, text="", font=("Arial", 10), justify="left", anchor="w")
-lbl_ringkasan.pack(fill=tk.X, pady=5)
-
-# --- AREA TABEL BERKOLOM (TREEVIEW) ---
+# Area Tabel Treeview Berkolom (khusus Postfix)
 frame_tabel = tk.Frame(frame_kanan)
-frame_tabel.pack(fill=tk.BOTH, expand=True, pady=5)
-
-tree_hasil = ttk.Treeview(frame_tabel, show="headings")
-scroll_y = ttk.Scrollbar(frame_tabel, orient="vertical", command=tree_hasil.yview)
-scroll_x = ttk.Scrollbar(frame_tabel, orient="horizontal", command=tree_hasil.xview)
+tree_hasil = ttk.Treeview(frame_tabel, show='headings')
+scroll_y = ttk.Scrollbar(
+    frame_tabel, orient='vertical', command=tree_hasil.yview
+)
+scroll_x = ttk.Scrollbar(
+    frame_tabel, orient='horizontal', command=tree_hasil.xview
+)
 tree_hasil.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
 
 scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
 scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
 tree_hasil.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-# Widget Text Alternatif (Tetap disimpan bila butuh output teks biasa)
+# Area Text Biasa (untuk fitur M1)
 text_hasil = tk.Text(frame_kanan, height=8)
+text_hasil.pack(fill=tk.BOTH, expand=True, pady=5)
 
+# Area Command Log
 frame_log = tk.LabelFrame(frame_kanan, text='COMMAND LOG & WAKTU')
 frame_log.pack(fill=tk.X, side=tk.BOTTOM)
 
-text_log = tk.Text(frame_log, height=5, bg='black', fg='lime', font=('Consolas', 9))
+text_log = tk.Text(
+    frame_log, height=5, bg='black', fg='lime', font=('Consolas', 9)
+)
 text_log.pack(fill=tk.BOTH, expand=True)
 
 pilih_fitur('ARR_LIHAT_INDEKS')

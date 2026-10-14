@@ -26,3 +26,7 @@
 - Finishing UI M1
 - Mulai mengerjakan M2 (Postfix)
 - Revisi UI dari M2 (Postfix) agar bisa import kolom
+
+### 14 Oktober
+
+- Fix error dimana kolom template input nama pelanggan di M1 dan input rumus M2 muncul sama
