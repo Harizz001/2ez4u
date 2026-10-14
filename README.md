@@ -39,3 +39,4 @@
 - Fix error dimana button eksekusi di bagian insertion search saling timpa menimpa
 - Menambahkan fitur drop-down pada input "urutkan menurut" di insertion search
 - Menambah opsi drop-down agar mencakup seluruh judul tabel
+- Mengerjakan merge sort (M3)

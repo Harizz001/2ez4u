@@ -15,7 +15,7 @@ from backend.m2_antrean import (
     hitung_postfix,
     ke_postfix,
 )
-from backend.m3_laporan import insertion_sort
+from backend.m3_laporan import insertion_sort, merge_sort
 
 # Global Variable M1
 data_array = Array()
@@ -385,6 +385,33 @@ def pilih_fitur(kode_fitur):
       )
 
       # Perkecil lebar entry jumlah baris
+      entry_index.config(width=8)
+
+      # Input 1: Jumlah Baris (Kolom 0 & 1)
+      lbl_index.config(text='Jumlah baris:')
+      lbl_index.grid(row=0, column=0, padx=(5, 2), pady=5, sticky='w')
+      entry_index.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+      entry_index.delete(0, tk.END)
+      entry_index.insert(0, '10')
+
+      # Input 2: Kunci Urut pakai Dropdown/Combobox (Kolom 2 & 3)
+      lbl_nama.config(text='Urutkan menurut:')
+      lbl_nama.grid(row=0, column=2, padx=(5, 2), pady=5, sticky='w')
+      combo_kunci.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+
+      # Tombol URUTKAN (Kolom 4)
+      btn_eksekusi.grid(row=0, column=4, padx=5, pady=5)
+      btn_eksekusi.config(text='URUTKAN', bg='#0056b3', fg='white')
+
+  elif kode_fitur == 'SORT_MERGE':
+      lbl_judul_fitur.config(text='Sort: merge sort, O(n log n)')
+      lbl_sub_fitur.config(
+          text=(
+              'Membagi data secara rekursif menjadi dua bagian lalu'
+              ' menggabungkannya secara terurut. Sangat efisien dan stabil.'
+          )
+      )
+
       entry_index.config(width=8)
 
       # Input 1: Jumlah Baris (Kolom 0 & 1)
@@ -970,6 +997,38 @@ def eksekusi_fitur():
             f' {round(ms, 4)} ms'
         )
 
+  elif fitur_aktif == 'SORT_MERGE':
+      try:
+        limit = int(entry_index.get())
+      except:
+        limit = 10
+
+      kunci = combo_kunci.get().strip().lower()
+      opsi_valid = ['oid', 'pelanggan', 'resto', 'menu', 'harga', 'status']
+      if kunci not in opsi_valid:
+        kunci = 'harga'
+
+      n_data = min(limit, data_array.size)
+      sampel_data = [data_array.get(i) for i in range(n_data)]
+
+      t1 = time.perf_counter()
+      hasil_sort, perbandingan, pemindahan = merge_sort(sampel_data, kunci)
+      t2 = time.perf_counter()
+      ms = (t2 - t1) * 1000
+
+      lbl_ringkasan.pack(fill=tk.X, pady=5)
+      text_ringkasan = (
+          f'{n_data} pesanan diurutkan menurut {kunci} (Merge Sort).\n{perbandingan:,}'
+          f' perbandingan, {pemindahan:,} pemindahan/penulisan.'
+      )
+      lbl_ringkasan.config(text=text_ringkasan)
+
+      tampilkan_tabel_pesanan(hasil_sort)
+      cetak_log(
+          f'M3 - Merge Sort ({n_data} data, kunci: {kunci}) -> Waktu:'
+          f' {round(ms, 4)} ms'
+      )
+
 # --- UI SETUP TKINTER ---
 root = tk.Tk()
 root.title('2EZ4U Food Delivery')
@@ -1207,7 +1266,7 @@ tk.Button(
     command=lambda: pilih_fitur('M2_DEQUEUE_CIRCULAR'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
-# KELOMPOK M3 (SORT - INSERTION SORT)
+# KELOMPOK M3
 lbl_m3 = tk.Label(frame_kiri, text="M3 - SORT DAN SEARCH", font=("Arial", 8, "bold"), fg="#555555", anchor="w")
 lbl_m3.pack(fill=tk.X, padx=8, pady=(12, 2))
 
@@ -1219,6 +1278,15 @@ tk.Button(
     bg="#f8f9fa", 
     bd=1,
     command=lambda: pilih_fitur('SORT_INSERTION')
+).pack(fill=tk.X, padx=8, pady=1)
+tk.Button(
+    frame_kiri,
+    text='SORT - MERGE SORT',
+    anchor='w',
+    font=('Arial', 9),
+    bg='#f8f9fa',
+    bd=1,
+    command=lambda: pilih_fitur('SORT_MERGE'),
 ).pack(fill=tk.X, padx=8, pady=1)
 
 # --- FRAME KANAN ---
