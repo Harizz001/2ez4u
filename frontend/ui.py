@@ -967,10 +967,34 @@ label_status.pack(side=tk.LEFT, padx=10)
 frame_utama = tk.Frame(root)
 frame_utama.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-# --- FRAME KIRI (SIDEBAR MENU) ---
-frame_kiri = tk.Frame(frame_utama, width=260, bd=1, relief=tk.SOLID)
-frame_kiri.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
+# --- FRAME KIRI (SIDEBAR MENU WITH SCROLLBAR) ---
+frame_kiri_outer = tk.Frame(frame_utama, width=280, bd=1, relief=tk.SOLID)
+frame_kiri_outer.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
 
+# Canvas dan Scrollbar untuk mendukung scroll
+canvas_kiri = tk.Canvas(frame_kiri_outer, bd=0, highlightthickness=0, width=250)
+scrollbar_kiri = ttk.Scrollbar(frame_kiri_outer, orient="vertical", command=canvas_kiri.yview)
+
+# Inner frame tempat seluruh tombol diletakkan (variabel tetap 'frame_kiri')
+frame_kiri = tk.Frame(canvas_kiri)
+
+# Update area scroll secara otomatis saat ada elemen baru yang ditambahkan
+frame_kiri.bind(
+    "<Configure>",
+    lambda e: canvas_kiri.configure(scrollregion=canvas_kiri.bbox("all"))
+)
+
+canvas_kiri.create_window((0, 0), window=frame_kiri, anchor="nw")
+canvas_kiri.configure(yscrollcommand=scrollbar_kiri.set)
+
+scrollbar_kiri.pack(side=tk.RIGHT, fill=tk.Y)
+canvas_kiri.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Fitur Scroll menggunakan Wheel Mouse (Opsional)
+def _on_mousewheel(event):
+    canvas_kiri.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+canvas_kiri.bind_all("<MouseWheel>", _on_mousewheel)
 # KELOMPOK M1
 lbl_m1 = tk.Label(
     frame_kiri,
